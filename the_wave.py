@@ -6,3 +6,4 @@ from pyglet.window import key
 import engine
 
 window=pyglet.window.Window()
+pyglet.app.run()
