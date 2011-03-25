@@ -8,28 +8,24 @@ class Window(pyglet.window.Window):
 	def on_draw(self):
 		window.clear()
 		sprite.draw()
-		label.draw()
 		
 def update(dt):
+	sprite.update(ground)
 	if(keys[key.A]):
 		sprite.x-=5
 		sprite.animate()
 	if(keys[key.D]):
 		sprite.x+=5
 		sprite.animate()
-	if(keys[key.W]):
-		sprite.y+=5
-		sprite.animate()
-	if(keys[key.S]):
-		sprite.y-=5
+	if(keys[key.SPACE] and sprite.y<=ground):
+		sprite.vspeed+=10
+		sprite.y+=1
 		sprite.animate()
 
-label=pyglet.text.Label("lol", x=20, y=50)
-
-
-sprite=Sprite(img="test.png", x=100, y=100, width=64, height=64)
+ground=150
+sprite=Sprite(img="test.png", x=100, y=500, width=64, height=64, gravity=-0.2)
 keys=key.KeyStateHandler()
-window=Window()
+window=Window(width=800, height=600, caption="The Wave")
 window.push_handlers(keys)
 pyglet.clock.schedule(update)
 pyglet.app.run()
