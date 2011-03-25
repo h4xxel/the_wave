@@ -10,6 +10,7 @@ class Sprite(pyglet.sprite.Sprite):
 	x=0; y=0
 	hspeed=0; vspeed=0
 	gravity=0
+	width=0; height=0
 	def __init__(self, img, x, y, width, height, hspeed=0, vspeed=0, gravity=0):
 		frames=[]
 		image=pyglet.resource.image(img)
@@ -19,6 +20,7 @@ class Sprite(pyglet.sprite.Sprite):
 		self.x=x; self.y=y
 		self.hspeed=hspeed; self.vspeed=vspeed
 		self.gravity=gravity
+		self.width=width; self.height=height
 		
 	def draw(self):
 		self.animation.blit(self.x, self.y)
@@ -26,7 +28,7 @@ class Sprite(pyglet.sprite.Sprite):
 	def animate(self):
 		self.animation.progress()
 		
-	def update(self, ground):
+	def update(self, ground=-100):
 		if self.y<=ground:
 			self.y=ground
 			self.vspeed=0
@@ -48,7 +50,8 @@ class Animation():
 			
 	def blit(self, x, y):
 		image=self.frames[self.active_frame][0]
-		image.blit(x, y)
+		s=pyglet.sprite.Sprite(img=image, x=x, y=y)
+		s.draw()
 			
 class AnimationFrame():
 	image=None
