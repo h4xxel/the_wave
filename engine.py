@@ -29,12 +29,12 @@ class Sprite(pyglet.sprite.Sprite):
 		self.animation.progress()
 		
 	def update(self, ground=-100):
+		self.x+=self.hspeed
 		if self.y<=ground:
 			self.y=ground
 			self.vspeed=0
 		else:
 			self.vspeed+=self.gravity
-			self.x+=self.hspeed
 			self.y+=self.vspeed
 		
 
