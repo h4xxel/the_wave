@@ -23,19 +23,23 @@ def update(dt):
 		sprite.vspeed+=sprite.gravity
 		sprite.y+=sprite.vspeed
 	
-	if(sprite.y<=ground.y+ground.height):
-		if(keys[key.A]):
-			sprite.hspeed=-3
-			sprite.animate()
-		elif(keys[key.D]):
-			sprite.hspeed=3
-			sprite.animate()
-		else:
-			sprite.hspeed=0
-		if(keys[key.SPACE]):
-			sprite.vspeed+=7
-			sprite.y+=1
-			sprite.animate()
+	#if(sprite.y<=ground.y+ground.height):
+	if(keys[key.LEFT]):
+		sprite.hspeed=-3
+		sprite.animate()
+	elif(keys[key.RIGHT]):
+		sprite.hspeed=3
+		sprite.animate()
+	else:
+		sprite.hspeed=0
+	if(keys[key.SPACE] and (sprite.y<=ground.y+ground.height)):
+		sprite.vspeed+=13
+		sprite.y+=1
+		sprite.animate()
+		
+	#LOL test
+	if(sprite.x>=(800-32)):
+		sprite.x=8
 			
 def init_terrain():
 	terrain=[0,100, 0,0, 100,100]
