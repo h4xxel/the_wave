@@ -5,10 +5,6 @@ import pyglet
 from engine import *
 import random
 
-<<<<<<< HEAD
-window=pyglet.window.Window()
-pyglet.app.run()
-=======
 class Window(pyglet.window.Window):
 	def on_draw(self):
 		window.clear()
@@ -37,7 +33,7 @@ def update(dt):
 		else:
 			sprite.hspeed=0
 		if(keys[key.SPACE]):
-			sprite.vspeed+=7
+			sprite.vspeed+=13
 			sprite.y+=1
 			sprite.animate()
 			
@@ -56,4 +52,4 @@ window=Window(width=800, height=600, caption="The Wave")
 window.push_handlers(keys)
 pyglet.clock.schedule(update)
 pyglet.app.run()
->>>>>>> 1f7079d6c44c9a76c175fb3fca525ec2f8b1b351
+
