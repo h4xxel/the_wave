@@ -45,10 +45,10 @@ def update(dt):
 =======
 	if(sprite.y-5<=get_terrain_y(sprite.x)):
 		sprite.y=get_terrain_y(sprite.x+(sprite.width/2))
-		if(keys[key.A]):
+		if(keys[key.LEFT]):
 			sprite.hspeed=-3
 			sprite.animate()
-		elif(keys[key.D]):
+		elif(keys[key.RIGHT]):
 			sprite.hspeed=3
 			sprite.animate()
 		else:
