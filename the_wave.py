@@ -35,13 +35,8 @@ def update(dt):
 		else:
 			sprite.hspeed=0
 		if(keys[key.SPACE]):
-<<<<<<< HEAD
 			sprite.vspeed+=13
-			sprite.y+=1
-=======
-			sprite.vspeed+=7
 			sprite.y+=10
->>>>>>> dbf1c9da89e970f0c27885641598a56ffa64a9ca
 			sprite.animate()
 			
 def init_terrain():
@@ -64,6 +59,8 @@ terrain=init_terrain()
 sprite=Sprite(img="snubbe.png", x=100, y=500, width=32, height=32, gravity=-0.2)
 background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed=-2)
 ground=Sprite(img="block.png", x=0, y=0, width=64, height=64, hspeed=-2)
+music = pyglet.resource.media('snow.ogg')
+music.play()
 keys=key.KeyStateHandler()
 window=Window(width=800, height=600, caption="The Wave")
 window.push_handlers(keys)
