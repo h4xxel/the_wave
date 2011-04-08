@@ -4,6 +4,7 @@
 import pyglet
 from engine import *
 import random
+jump = 1
 
 class Window(pyglet.window.Window):
 	def on_draw(self):
@@ -13,6 +14,7 @@ class Window(pyglet.window.Window):
 		sprite.draw()
 		
 def update(dt):
+	global jump
 	background.x+=background.hspeed
 	sprite.x+=sprite.hspeed
 	
@@ -20,11 +22,22 @@ def update(dt):
 		sprite.y=ground.y+ground.height
 		sprite.vspeed=0
 		sprite.y=get_terrain_y(sprite.x+(sprite.width/2))
+		jump = 1
 	else:
 		sprite.vspeed+=sprite.gravity
 		sprite.y+=sprite.vspeed
 	
-	if(sprite.y-5<=get_terrain_y(sprite.x)):
+	if(sprite.y-5>get_terrain_y(sprite.x)):
+		if(keys[key.LEFT]):
+			sprite.hspeed -= 0.2
+		if(keys[key.RIGHT]):
+			sprite.hspeed += 0.2
+		if(keys[key.SPACE] and jump):
+			print "jumpppp"
+			sprite.vspeed+=1
+			sprite.animate()
+			jump = 0;
+	else:
 		sprite.y=get_terrain_y(sprite.x+(sprite.width/2))
 		if(keys[key.LEFT]):
 			sprite.hspeed=-3
@@ -38,7 +51,6 @@ def update(dt):
 			sprite.vspeed+=13
 			sprite.y+=10
 			sprite.animate()
-			
 def init_terrain():
 	terrain=[0,100, 0,0, 100,100]
 	for i in range(100, 800+100, 100):
@@ -46,6 +58,7 @@ def init_terrain():
 	return terrain
 	
 def get_terrain_y(x):
+	x=int(x)
 	y1=terrain[4*(x//100)+1]
 	y2=terrain[4*(x//100)+5]
 	dx=float(x-100*(x//100))
@@ -61,6 +74,7 @@ background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed
 ground=Sprite(img="block.png", x=0, y=0, width=64, height=64, hspeed=-2)
 music = pyglet.resource.media('snow.ogg')
 music.play()
+
 keys=key.KeyStateHandler()
 window=Window(width=800, height=600, caption="The Wave")
 window.push_handlers(keys)
