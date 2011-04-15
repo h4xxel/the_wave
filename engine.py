@@ -3,7 +3,7 @@
 
 import pyglet
 from pyglet.window import key
-
+import random
 
 #use our own sprite class, because pyglet's sprite class is buggy with animations
 class Sprite(pyglet.sprite.Sprite):
@@ -68,3 +68,27 @@ class AnimationFrame():
 		self.duration=duration
 	def __getitem__(self, lol):
 		return [self.image, self.duration]
+
+class Terrain():
+	terrain=[]
+	terrain_progress=0
+	def __init__(self):
+		self.terrain=[0,100, 0,0, 100,100]
+		for i in range(100, 800+200, 100):
+			self.terrain.extend([i, 0, i+100,random.randint(50, 100)])
+			
+	def get_y(self, x):
+		y1=self.terrain[4*(x//100)+1]
+		y2=self.terrain[4*(x//100)+5]
+		dx=float(x-100*(x//100))
+		return y1+int(float(y2-y1)*(dx/100))
+	
+	def draw(self):
+		pyglet.graphics.draw(len(self.terrain)/2, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", tuple(self.terrain)))
+	
+	def progress(self):
+		for i in range(0, len(self.terrain), 2):
+			self.terrain[i]-=1
+		self.terrain_progress+=1
+		if(not(self.terrain_progress%100)):
+			self.terrain.extend([900, 0, 1000, random.randint(50, 100)])
