@@ -22,7 +22,7 @@ class Sprite(pyglet.sprite.Sprite):
 		self.gravity=gravity
 		
 	def draw(self):
-		self.animation.blit(self.x, self.y)
+		self.animation.blit(int(self.x), int(self.y))
 	
 	def animate(self):
 		self.animation.progress()
