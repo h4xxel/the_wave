@@ -33,7 +33,7 @@ def update(dt):
 		if(keys[key.RIGHT]):
 			sprite.hspeed += 0.2
 		if(keys[key.SPACE] and jump):
-			print "jumpppp"
+			print "lol"
 			sprite.vspeed+=1
 			sprite.animate()
 			jump = 0;
