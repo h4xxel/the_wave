@@ -27,7 +27,7 @@ class Window(pyglet.window.Window):
 				if selection == 0:
 					game_state=states.RUN
 				if selection == 1:
-					game_state=states.OPTIONS
+					game_state=states.HISCORE
 				if selection == 2:
 					self.close()
 
@@ -40,14 +40,14 @@ class states():
 	RUN=0
 	MENU=1
 	PAUSE=2
-	OPTIONS=3
+	HISCORE=3
 
 game_state=states.MENU
 bg=pyglet.sprite.Sprite(pyglet.resource.image('thewave.png'))
 start=pyglet.sprite.Sprite(pyglet.resource.image('start.png'),x=200, y=350)
-options=pyglet.sprite.Sprite(pyglet.resource.image('options.png'),x=200, y=200)
+hiscore=pyglet.sprite.Sprite(pyglet.resource.image('hiscore.png'),x=200, y=200)
 quit=pyglet.sprite.Sprite(pyglet.resource.image('quit.png'),x=200, y=50)
-menu=[start, options, quit]
+menu=[start, hiscore, quit]
 selection=0
 music = pyglet.resource.media('snow.ogg')
 music.play()

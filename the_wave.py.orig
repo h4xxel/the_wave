@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import pyglet
+from pyglet.gl import *
 from engine import *
 import random
 jump = 1
@@ -9,27 +10,31 @@ jump = 1
 class Window(pyglet.window.Window):
 	def on_draw(self):
 		window.clear()
-		background.draw()
-		pyglet.graphics.draw(len(terrain)/2, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", tuple(terrain)))
+		glClearColor(0, 128, 128, 255)
+		#background.draw()
+		terrain.draw()
 		sprite.draw()
 		
 def update(dt):
+<<<<<<< HEAD
 	global jump
 	background.x+=background.hspeed
+=======
+	#background.x+=background.hspeed
+	terrain.progress()
+>>>>>>> 60fb43a838cd6283231d5cec8d326f16ecfaf108
 	sprite.x+=sprite.hspeed
-	
-	if sprite.y<=get_terrain_y(sprite.x):
+	terrain_y=terrain.get_y(sprite.x+(sprite.width/2)+terrain.terrain_progress)
+	if sprite.y<=terrain_y:
 		sprite.y=ground.y+ground.height
 		sprite.vspeed=0
+<<<<<<< HEAD
 		sprite.y=get_terrain_y(sprite.x+(sprite.width/2))
 		jump = 1
 	else:
 		sprite.vspeed+=sprite.gravity
 		sprite.y+=sprite.vspeed
-<<<<<<< HEAD
-
 	if(sprite.y-5<=get_terrain_y(sprite.x)):
-=======
 	
 	if(sprite.y-5>get_terrain_y(sprite.x)):
 		if(keys[key.LEFT]):
@@ -42,19 +47,29 @@ def update(dt):
 			sprite.animate()
 			jump = 0;
 	else:
->>>>>>> 8664e00c6cd1ed4404b95f00ef617fa9db8663e6
 		sprite.y=get_terrain_y(sprite.x+(sprite.width/2))
 		if(keys[key.LEFT]):
 			sprite.hspeed=-3
 			sprite.animate()
 		elif(keys[key.RIGHT]):
+=======
+		sprite.y=terrain_y
+	else:
+		sprite.vspeed+=sprite.gravity
+		sprite.y+=sprite.vspeed
+	if(sprite.y-5<=terrain_y):
+		sprite.y=terrain_y
+		if(keys[key.A]):
+			sprite.hspeed=-3
+		elif(keys[key.D]):
+>>>>>>> 60fb43a838cd6283231d5cec8d326f16ecfaf108
 			sprite.hspeed=3
-			sprite.animate()
 		else:
 			sprite.hspeed=0
 		if(keys[key.SPACE]):
 			sprite.vspeed+=13
 			sprite.y+=10
+<<<<<<< HEAD
 			sprite.animate()
 def init_terrain():
 	terrain=[0,100, 0,0, 100,100]
@@ -72,8 +87,18 @@ def get_terrain_y(x):
 	#~ else:
 		#~ return int(y2-float(abs(y2-y1))/(1+(dx/100)))
 	return y1+int(float(y2-y1)*(dx/100))
+=======
+	if(sprite.x+sprite.width>=window.width):
+		sprite.x=window.width-sprite.width
+	if(sprite.x<=0):
+		sprite.x=0
+	sprite.animate()
+			
+>>>>>>> 60fb43a838cd6283231d5cec8d326f16ecfaf108
 
-terrain=init_terrain()
+glEnable(GL_TEXTURE_2D)
+
+terrain=Terrain()
 sprite=Sprite(img="snubbe.png", x=100, y=500, width=32, height=32, gravity=-0.2)
 background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed=-2)
 ground=Sprite(img="block.png", x=0, y=0, width=64, height=64, hspeed=-2)
