@@ -32,6 +32,12 @@ class Sprite(pyglet.sprite.Sprite):
 
 	def get_height(self):
 		return self.animation.height
+		
+	def collision_with(self, sprite2):
+		if(self.x+self.width>sprite2.x and self.x<sprite2.x+sprite2.width and self.y+self.height>sprite2.y and self.y<sprite2.y+sprite2.height):
+			return True
+		else:
+			return False
 
 	width=property(get_width); height=property(get_height)
 
