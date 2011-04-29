@@ -27,7 +27,7 @@ class Window(pyglet.window.Window):
 				m.draw()
 
 	def on_key_press(self, symbol, modifiers):
-		global double_jump, selection, game_state, pause_selection
+		global double_jump, selection, game_state, pause_selection, score
 		if(symbol==key.SPACE and(sprite.y-5<=terrain.get_y(sprite.x+(sprite.width/2)+terrain.terrain_progress) or double_jump==True)):
 			sprite.vspeed=7
 			sprite.y+=10
@@ -63,6 +63,7 @@ class Window(pyglet.window.Window):
 					game_state = states.RUN
 				if pause_selection == 1:
 					game_state = states.MENU
+					score = 0
 
 		if game_state == states.RUN:
 			if symbol == key.ESCAPE:
