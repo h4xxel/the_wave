@@ -31,8 +31,9 @@ class Window(pyglet.window.Window):
 			gameover.draw()
 
 	def on_key_press(self, symbol, modifiers):
-		global double_jump, selection, game_state, pause_selection, score
+		global double_jump, selection, game_state, pause_selection, score,objectlist
 		if(symbol==key.SPACE and(sprite.y-5<=terrain.get_y(sprite.x+(sprite.width/2)+terrain.terrain_progress) or double_jump==True)):
+			jump.play()
 			sprite.vspeed=7
 			sprite.y+=10
 			double_jump=not double_jump
@@ -49,6 +50,7 @@ class Window(pyglet.window.Window):
 				if selection == 0:
 					game_state=states.RUN
 					score = 0
+					objectlist=[]
 					sprite.x=256;sprite.y=500;sprite.hspeed=0;sprite.vspeed=0
 				if selection == 1:
 					game_state=states.HISCORE
@@ -99,11 +101,12 @@ def update(dt):
 			k.vspeed+=k.gravity
 			k.y+=k.vspeed
 			k.x+=k.hspeed
+			if k.collision_with(sprite):
+				game_state=states.GAMEOVER
+				gameoversound.play()
 			if k.y<0:
 				objectlist.remove(k)
-			
-		
-		
+				
 		score+=0.1
 		scoretext.text="Score: "+str(int(score))
 		#background.x+=background.hspeed
@@ -136,6 +139,7 @@ def update(dt):
 		if(sprite.x+sprite.width>=window.width-50):
 			sprite.x=window.width-sprite.width-50
 		if(sprite.x<=32):
+			gameoversound.play()
 			game_state=states.GAMEOVER
 			sprite.x=32
 		sprite.animate()
@@ -179,6 +183,10 @@ gameover=pyglet.sprite.Sprite(pyglet.resource.image('gameover.png'))
 #akta diggggg
 addobject=0
 objectlist=[]
+
+#sound effects
+jump=pyglet.resource.media('jump.wav',streaming=False)
+gameoversound=pyglet.resource.media('gameover.wav',streaming=False)
 
 score=0.0
 double_jump=False
