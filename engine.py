@@ -15,7 +15,7 @@ class Sprite(pyglet.sprite.Sprite):
 		frames=[]
 		image=pyglet.resource.image(img)
 		for i in range(0, image.width, width):
-			frames.append([image.get_region(i, 0, width, height), 0.3])
+			frames.append([image.get_region(i, 0, width, height), 0.2])
 		self.animation=Animation(frames)
 		self.x=x; self.y=y
 		self.hspeed=hspeed; self.vspeed=vspeed
@@ -96,4 +96,7 @@ class Terrain():
 			self.terrain[i]-=steps
 		self.terrain_progress+=steps
 		if(not(self.terrain_progress%100)):
+			#if(random.randint(1, 4)==1):
+			#	self.terrain.extend([900, -100, 1000, -100])
+			#else:
 			self.terrain.extend([900, 0, 1000, random.randint(50, 100)])

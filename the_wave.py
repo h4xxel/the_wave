@@ -9,11 +9,15 @@ import random
 
 class Window(pyglet.window.Window):
 	def on_draw(self):
+		global loltexture
 		window.clear()
 		if game_state == states.RUN:
 			glClearColor(0, 128, 128, 255)
 			#background.draw()
+			glEnable(loltexture.target)
+			glBindTexture(loltexture.target, loltexture.id)
 			terrain.draw()
+			glDisable(loltexture.target)
 			sprite.draw()
 			scoretext.draw()
 			wave.draw()
@@ -116,15 +120,9 @@ def update(dt):
 		sprite.animate()
 
 glEnable(GL_TEXTURE_2D)
-block=pyglet.image.load('block.png')
+block=pyglet.image.load('sand.png')
 loltexture=block.get_texture()
-glBindTexture(GL_TEXTURE_2D, loltexture.id);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-#glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, block.width, block.height, 0, GL_RGB, GL_UNSIGNED_BYTE, ctypes.byref(loltexture.image_data));
+#~ glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, block.width, block.height, 0, GL_RGB, GL_UNSIGNED_BYTE, loltexture);
 
 
 class states():
@@ -152,7 +150,7 @@ score=0.0
 double_jump=False
 scoretext=pyglet.text.Label("Score: ", font_name="Arial", font_size=16, x=0, y=600-24, color=(0,0,0,255))
 terrain=Terrain()
-sprite=Sprite(img="snubbe.png", x=256, y=500, width=32, height=32, gravity=-0.2)
+sprite=Sprite(img="canman.png", x=256, y=500, width=200, height=250, gravity=-0.2)
 wave=Sprite(img="wave.png", x=0, y=0, width=128, height=512)
 #background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed=-2)
 keys=key.KeyStateHandler()
