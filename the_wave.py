@@ -18,6 +18,8 @@ class Window(pyglet.window.Window):
 			glBindTexture(loltexture.target, loltexture.id)
 			terrain.draw()
 			glDisable(loltexture.target)
+			for k in objectlist:
+				k.draw()
 			sprite.draw()
 			scoretext.draw()
 			wave.draw()
@@ -29,10 +31,13 @@ class Window(pyglet.window.Window):
 			pause.draw()
 			for m in pause_menu:
 				m.draw()
+		if game_state == states.GAMEOVER:
+			gameover.draw()
 
 	def on_key_press(self, symbol, modifiers):
-		global double_jump, selection, game_state, pause_selection
+		global double_jump, selection, game_state, pause_selection, score,objectlist
 		if(symbol==key.SPACE and(sprite.y-5<=terrain.get_y(sprite.x+(sprite.width/2)+terrain.terrain_progress) or double_jump==True)):
+			jump.play()
 			sprite.vspeed=7
 			sprite.y+=10
 			double_jump=not double_jump
@@ -48,6 +53,9 @@ class Window(pyglet.window.Window):
 			if symbol == key.RETURN:
 				if selection == 0:
 					game_state=states.RUN
+					score = 0
+					objectlist=[]
+					sprite.x=256;sprite.y=500;sprite.hspeed=0;sprite.vspeed=0
 				if selection == 1:
 					game_state=states.HISCORE
 				if selection == 2:
@@ -71,9 +79,13 @@ class Window(pyglet.window.Window):
 		if game_state == states.RUN:
 			if symbol == key.ESCAPE:
 				game_state = states.PAUSE
+				
+		if game_state == states.GAMEOVER:
+			if symbol == key.ENTER:
+				game_state = states.MENU
 
 def update(dt):
-	global score, double_jump
+	global score, double_jump, game_state
 	
 	for m in menu:
 		m.color=(255, 255, 255)
@@ -83,6 +95,22 @@ def update(dt):
 	pause_menu[pause_selection].color=(100, 100, 0)
 	
 	if game_state == states.RUN:
+		
+		addobject=random.randint(1,100)
+		
+		if addobject < 3:
+			objectlist.append(Sprite(img="block.png", x=random.randint(300,1000), y=600, width=32, height=32, gravity=-0.2))
+		for k in objectlist:
+			k.hspeed=-random.randint(1,4)
+			k.vspeed+=k.gravity
+			k.y+=k.vspeed
+			k.x+=k.hspeed
+			if k.collision_with(sprite):
+				game_state=states.GAMEOVER
+				gameoversound.play()
+			if k.y<0:
+				objectlist.remove(k)
+				
 		score+=0.1
 		scoretext.text="Score: "+str(int(score))
 		#background.x+=background.hspeed
@@ -112,10 +140,11 @@ def update(dt):
 				sprite.hspeed=-2
 			elif(keys[key.RIGHT]):
 				sprite.hspeed=1
-		if(sprite.x+sprite.width>=window.width-200):
-			sprite.x=window.width-sprite.width-200
+		if(sprite.x+sprite.width>=window.width-50):
+			sprite.x=window.width-sprite.width-50
 		if(sprite.x<=32):
-			pyglet.app.exit()
+			gameoversound.play()
+			game_state=states.GAMEOVER
 			sprite.x=32
 		sprite.animate()
 
@@ -130,6 +159,7 @@ class states():
 	MENU=1
 	PAUSE=2
 	HISCORE=3
+	GAMEOVER=4
 
 game_state=states.MENU
 #menu
@@ -145,6 +175,16 @@ pause=pyglet.sprite.Sprite(pyglet.resource.image('pause.png'))
 pause_quit=pyglet.sprite.Sprite(pyglet.resource.image('quit.png'),x=200, y=200)
 pause_menu=[resume, pause_quit]
 pause_selection=0
+#gameover
+gameover=pyglet.sprite.Sprite(pyglet.resource.image('gameover.png'))
+
+#akta diggggg
+addobject=0
+objectlist=[]
+
+#sound effects
+jump=pyglet.resource.media('jump.wav',streaming=False)
+gameoversound=pyglet.resource.media('gameover.wav',streaming=False)
 
 score=0.0
 double_jump=False

@@ -4,17 +4,28 @@
 import pyglet
 from pyglet.gl import *
 from engine import *
+import ctypes
 import random
-from pyglet.window import key
 
 class Window(pyglet.window.Window):
 	def on_draw(self):
+		global loltexture
 		window.clear()
 		if game_state == states.RUN:
 			glClearColor(0, 128, 128, 255)
 			#background.draw()
+			glEnable(loltexture.target)
+			glBindTexture(loltexture.target, loltexture.id)
 			terrain.draw()
+<<<<<<< HEAD
+			glDisable(loltexture.target)
+=======
+			for k in objectlist:
+				k.draw()
+>>>>>>> FETCH_HEAD
 			sprite.draw()
+			scoretext.draw()
+			wave.draw()
 		if game_state == states.MENU:
 			bg.draw()
 			for m in menu:
@@ -23,9 +34,16 @@ class Window(pyglet.window.Window):
 			pause.draw()
 			for m in pause_menu:
 				m.draw()
-		
+		if game_state == states.GAMEOVER:
+			gameover.draw()
+
 	def on_key_press(self, symbol, modifiers):
-		global selection, game_state, pause_selection
+		global double_jump, selection, game_state, pause_selection, score,objectlist
+		if(symbol==key.SPACE and(sprite.y-5<=terrain.get_y(sprite.x+(sprite.width/2)+terrain.terrain_progress) or double_jump==True)):
+			jump.play()
+			sprite.vspeed=7
+			sprite.y+=10
+			double_jump=not double_jump
 		if game_state == states.MENU:
 			if symbol == key.DOWN:
 				selection+=1
@@ -38,11 +56,14 @@ class Window(pyglet.window.Window):
 			if symbol == key.RETURN:
 				if selection == 0:
 					game_state=states.RUN
+					score = 0
+					objectlist=[]
+					sprite.x=256;sprite.y=500;sprite.hspeed=0;sprite.vspeed=0
 				if selection == 1:
 					game_state=states.HISCORE
 				if selection == 2:
 					self.close()
-					
+			
 		if game_state == states.PAUSE:
 			if symbol == key.DOWN:
 				pause_selection+=1
@@ -57,92 +78,18 @@ class Window(pyglet.window.Window):
 					game_state = states.RUN
 				if pause_selection == 1:
 					game_state = states.MENU
-				
+
 		if game_state == states.RUN:
 			if symbol == key.ESCAPE:
 				game_state = states.PAUSE
-		
+				
+		if game_state == states.GAMEOVER:
+			if symbol == key.ENTER:
+				game_state = states.MENU
+
 def update(dt):
-<<<<<<< HEAD
-<<<<<<< HEAD
-	global jump
-	background.x+=background.hspeed
-=======
-	#background.x+=background.hspeed
-	terrain.progress()
->>>>>>> 60fb43a838cd6283231d5cec8d326f16ecfaf108
-	sprite.x+=sprite.hspeed
-	terrain_y=terrain.get_y(sprite.x+(sprite.width/2)+terrain.terrain_progress)
-	if sprite.y<=terrain_y:
-		sprite.y=ground.y+ground.height
-		sprite.vspeed=0
-<<<<<<< HEAD
-		sprite.y=get_terrain_y(sprite.x+(sprite.width/2))
-		jump = 1
-	else:
-		sprite.vspeed+=sprite.gravity
-		sprite.y+=sprite.vspeed
+	global score, double_jump, game_state
 	
-	if(sprite.y-5>get_terrain_y(sprite.x)):
-		if(keys[key.LEFT]):
-			sprite.hspeed -= 0.2
-		if(keys[key.RIGHT]):
-			sprite.hspeed += 0.2
-		if(keys[key.SPACE] and jump):
-			print "lol"
-			sprite.vspeed+=1
-			sprite.animate()
-			jump = 0;
-	else:
-		sprite.y=get_terrain_y(sprite.x+(sprite.width/2))
-		if(keys[key.LEFT]):
-			sprite.hspeed=-3
-			sprite.animate()
-		elif(keys[key.RIGHT]):
-=======
-		sprite.y=terrain_y
-	else:
-		sprite.vspeed+=sprite.gravity
-		sprite.y+=sprite.vspeed
-	if(sprite.y-5<=terrain_y):
-		sprite.y=terrain_y
-		if(keys[key.A]):
-			sprite.hspeed=-3
-		elif(keys[key.D]):
->>>>>>> 60fb43a838cd6283231d5cec8d326f16ecfaf108
-			sprite.hspeed=3
-		else:
-			sprite.hspeed=0
-		if(keys[key.SPACE]):
-			sprite.vspeed+=13
-			sprite.y+=10
-<<<<<<< HEAD
-			sprite.animate()
-def init_terrain():
-	terrain=[0,100, 0,0, 100,100]
-	for i in range(100, 800+100, 100):
-		terrain.extend([i, 0, i+100,random.randint(50, 100)])
-	return terrain
-	
-def get_terrain_y(x):
-	x=int(x)
-	y1=terrain[4*(x//100)+1]
-	y2=terrain[4*(x//100)+5]
-	dx=float(x-100*(x//100))
-	#~ if(y1>y2):
-		#~ return int(y2+float(abs(y2-y1))/(1+(dx/100)))
-	#~ else:
-		#~ return int(y2-float(abs(y2-y1))/(1+(dx/100)))
-	return y1+int(float(y2-y1)*(dx/100))
-=======
-	if(sprite.x+sprite.width>=window.width):
-		sprite.x=window.width-sprite.width
-	if(sprite.x<=0):
-		sprite.x=0
-	sprite.animate()
-			
->>>>>>> 60fb43a838cd6283231d5cec8d326f16ecfaf108
-=======
 	for m in menu:
 		m.color=(255, 255, 255)
 	menu[selection].color=(100, 100, 0)
@@ -151,43 +98,71 @@ def get_terrain_y(x):
 	pause_menu[pause_selection].color=(100, 100, 0)
 	
 	if game_state == states.RUN:
+		
+		addobject=random.randint(1,100)
+		
+		if addobject < 3:
+			objectlist.append(Sprite(img="block.png", x=random.randint(300,1000), y=600, width=32, height=32, gravity=-0.2))
+		for k in objectlist:
+			k.hspeed=-random.randint(1,4)
+			k.vspeed+=k.gravity
+			k.y+=k.vspeed
+			k.x+=k.hspeed
+			if k.collision_with(sprite):
+				game_state=states.GAMEOVER
+				gameoversound.play()
+			if k.y<0:
+				objectlist.remove(k)
+				
+		score+=0.1
+		scoretext.text="Score: "+str(int(score))
 		#background.x+=background.hspeed
-		terrain.progress()
+		terrain.progress(4)
 		sprite.x+=sprite.hspeed
 		terrain_y=terrain.get_y(sprite.x+(sprite.width/2)+terrain.terrain_progress)
 		if sprite.y<=terrain_y:
-			sprite.y=ground.y+ground.height
 			sprite.vspeed=0
 			sprite.y=terrain_y
+			double_jump=False
 		else:
 			sprite.vspeed+=sprite.gravity
 			sprite.y+=sprite.vspeed
 		if(sprite.y-5<=terrain_y):
 			sprite.y=terrain_y
-			if(keys[key.A]):
+			if(keys[key.LEFT]):
 				sprite.hspeed=-3
-			elif(keys[key.D]):
-				sprite.hspeed=3
+			elif(keys[key.RIGHT]):
+				sprite.hspeed=1
 			else:
-				sprite.hspeed=0
-			if(keys[key.SPACE]):
-				sprite.vspeed+=7
-				sprite.y+=10
-		if(sprite.x+sprite.width>=window.width):
-			sprite.x=window.width-sprite.width
-		if(sprite.x<=0):
-			sprite.x=0
+				sprite.hspeed=-1
+			#if(keys[key.SPACE]):
+				#sprite.vspeed+=7
+				#sprite.y+=10
+		else:
+			if(keys[key.LEFT]):
+				sprite.hspeed=-2
+			elif(keys[key.RIGHT]):
+				sprite.hspeed=1
+		if(sprite.x+sprite.width>=window.width-50):
+			sprite.x=window.width-sprite.width-50
+		if(sprite.x<=32):
+			gameoversound.play()
+			game_state=states.GAMEOVER
+			sprite.x=32
 		sprite.animate()
-			
->>>>>>> 690819cae232839ca984a5703174f9ac7d625714
 
 glEnable(GL_TEXTURE_2D)
+block=pyglet.image.load('sand.png')
+loltexture=block.get_texture()
+#~ glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, block.width, block.height, 0, GL_RGB, GL_UNSIGNED_BYTE, loltexture);
+
 
 class states():
 	RUN=0
 	MENU=1
 	PAUSE=2
 	HISCORE=3
+	GAMEOVER=4
 
 game_state=states.MENU
 #menu
@@ -203,11 +178,24 @@ pause=pyglet.sprite.Sprite(pyglet.resource.image('pause.png'))
 pause_quit=pyglet.sprite.Sprite(pyglet.resource.image('quit.png'),x=200, y=200)
 pause_menu=[resume, pause_quit]
 pause_selection=0
+#gameover
+gameover=pyglet.sprite.Sprite(pyglet.resource.image('gameover.png'))
 
+#akta diggggg
+addobject=0
+objectlist=[]
+
+#sound effects
+jump=pyglet.resource.media('jump.wav',streaming=False)
+gameoversound=pyglet.resource.media('gameover.wav',streaming=False)
+
+score=0.0
+double_jump=False
+scoretext=pyglet.text.Label("Score: ", font_name="Arial", font_size=16, x=0, y=600-24, color=(0,0,0,255))
 terrain=Terrain()
-sprite=Sprite(img="snubbe.png", x=100, y=500, width=32, height=32, gravity=-0.2)
-background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed=-2)
-ground=Sprite(img="block.png", x=0, y=0, width=64, height=64, hspeed=-2)
+sprite=Sprite(img="canman.png", x=256, y=500, width=200, height=250, gravity=-0.2)
+wave=Sprite(img="wave.png", x=0, y=0, width=128, height=512)
+#background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed=-2)
 keys=key.KeyStateHandler()
 window=Window(width=800, height=600, caption="The Wave")
 window.push_handlers(keys)
