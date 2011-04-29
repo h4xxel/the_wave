@@ -25,7 +25,7 @@ class Window(pyglet.window.Window):
 				m.draw()
 		
 	def on_key_press(self, symbol, modifiers):
-		global selection, game_state, pause_selection
+		global selection, game_state, pause_selection, double_jump
 		if game_state == states.MENU:
 			if symbol == key.DOWN:
 				selection+=1
@@ -42,7 +42,9 @@ class Window(pyglet.window.Window):
 					game_state=states.HISCORE
 				if selection == 2:
 					self.close()
-					
+			
+
+
 		if game_state == states.PAUSE:
 			if symbol == key.DOWN:
 				pause_selection+=1
