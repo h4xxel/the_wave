@@ -20,7 +20,7 @@ class Sprite(pyglet.sprite.Sprite):
 		self.x=x; self.y=y
 		self.hspeed=hspeed; self.vspeed=vspeed
 		self.gravity=gravity
-		
+	
 	def draw(self):
 		self.animation.blit(self.x, self.y)
 	
@@ -34,7 +34,6 @@ class Sprite(pyglet.sprite.Sprite):
 		return self.animation.height
 		
 	width=property(get_width); height=property(get_height)
-		
 
 class Animation():
 	# [[image, speed], [image, speed]] ...
@@ -59,15 +58,15 @@ class Animation():
 		return self.frames[int(self.active_frame)][0].height
 	
 	width=property(get_width); height=property(get_height)
-			
-class AnimationFrame():
-	image=None
-	duration=None
-	def __init__(self, image, duration):
-		self.image=image
-		self.duration=duration
-	def __getitem__(self, lol):
-		return [self.image, self.duration]
+
+#~ class AnimationFrame():
+	#~ image=None
+	#~ duration=None
+	#~ def __init__(self, image, duration):
+		#~ self.image=image
+		#~ self.duration=duration
+	#~ def __getitem__(self, lol):
+		#~ return [self.image, self.duration]
 
 class Terrain():
 	terrain=[]
@@ -76,7 +75,7 @@ class Terrain():
 		self.terrain=[0,100, 0,0, 100,100]
 		for i in range(100, 800+200, 100):
 			self.terrain.extend([i, 0, i+100,random.randint(50, 100)])
-			
+	
 	def get_y(self, x):
 		y1=self.terrain[4*(x//100)+1]
 		y2=self.terrain[4*(x//100)+5]
@@ -86,9 +85,9 @@ class Terrain():
 	def draw(self):
 		pyglet.graphics.draw(len(self.terrain)/2, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", tuple(self.terrain)))
 	
-	def progress(self):
+	def progress(self, steps=1):
 		for i in range(0, len(self.terrain), 2):
-			self.terrain[i]-=1
-		self.terrain_progress+=1
+			self.terrain[i]-=steps
+		self.terrain_progress+=steps
 		if(not(self.terrain_progress%100)):
 			self.terrain.extend([900, 0, 1000, random.randint(50, 100)])
