@@ -129,7 +129,7 @@ music.play()
 
 terrain=Terrain()
 sprite=Sprite(img="snubbe.png", x=100, y=500, width=32, height=32, gravity=-0.2)
-background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed=-2)
+#background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed=-2)
 ground=Sprite(img="block.png", x=0, y=0, width=64, height=64, hspeed=-2)
 keys=key.KeyStateHandler()
 window=Window(width=800, height=600, caption="The Wave")
