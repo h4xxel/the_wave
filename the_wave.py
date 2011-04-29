@@ -122,6 +122,10 @@ pause=pyglet.sprite.Sprite(pyglet.resource.image('pause.png'))
 pause_quit=pyglet.sprite.Sprite(pyglet.resource.image('quit.png'),x=200, y=200)
 pause_menu=[resume, pause_quit]
 pause_selection=0
+#some nice music
+music = pyglet.resource.media('snow.ogg')
+music.play()
+#sound effects
 
 terrain=Terrain()
 sprite=Sprite(img="snubbe.png", x=100, y=500, width=32, height=32, gravity=-0.2)
