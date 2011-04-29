@@ -14,6 +14,8 @@ class Window(pyglet.window.Window):
 			glClearColor(0, 128, 128, 255)
 			#background.draw()
 			terrain.draw()
+			for k in objectlist:
+				k.draw()
 			sprite.draw()
 			scoretext.draw()
 			wave.draw()
@@ -87,6 +89,21 @@ def update(dt):
 	pause_menu[pause_selection].color=(100, 100, 0)
 	
 	if game_state == states.RUN:
+		
+		addobject=random.randint(1,100)
+		
+		if addobject < 3:
+			objectlist.append(Sprite(img="block.png", x=random.randint(300,1000), y=600, width=32, height=32, gravity=-0.2))
+		for k in objectlist:
+			k.hspeed=-random.randint(1,4)
+			k.vspeed+=k.gravity
+			k.y+=k.vspeed
+			k.x+=k.hspeed
+			if k.y<0:
+				objectlist.remove(k)
+			
+		
+		
 		score+=0.1
 		scoretext.text="Score: "+str(int(score))
 		#background.x+=background.hspeed
@@ -116,8 +133,8 @@ def update(dt):
 				sprite.hspeed=-2
 			elif(keys[key.RIGHT]):
 				sprite.hspeed=1
-		if(sprite.x+sprite.width>=window.width-200):
-			sprite.x=window.width-sprite.width-200
+		if(sprite.x+sprite.width>=window.width-50):
+			sprite.x=window.width-sprite.width-50
 		if(sprite.x<=32):
 			game_state=states.GAMEOVER
 			sprite.x=32
@@ -158,6 +175,10 @@ pause_menu=[resume, pause_quit]
 pause_selection=0
 #gameover
 gameover=pyglet.sprite.Sprite(pyglet.resource.image('gameover.png'))
+
+#akta diggggg
+addobject=0
+objectlist=[]
 
 score=0.0
 double_jump=False
