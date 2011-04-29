@@ -4,8 +4,8 @@
 import pyglet
 from pyglet.gl import *
 from engine import *
+import ctypes
 import random
-from pyglet.window import key
 
 class Window(pyglet.window.Window):
 	def on_draw(self):
@@ -15,6 +15,8 @@ class Window(pyglet.window.Window):
 			#background.draw()
 			terrain.draw()
 			sprite.draw()
+			scoretext.draw()
+			wave.draw()
 		if game_state == states.MENU:
 			bg.draw()
 			for m in menu:
@@ -23,9 +25,13 @@ class Window(pyglet.window.Window):
 			pause.draw()
 			for m in pause_menu:
 				m.draw()
-		
+
 	def on_key_press(self, symbol, modifiers):
-		global selection, game_state, pause_selection
+		global double_jump, selection, game_state, pause_selection
+		if(symbol==key.SPACE and(sprite.y-5<=terrain.get_y(sprite.x+(sprite.width/2)+terrain.terrain_progress) or double_jump==True)):
+			sprite.vspeed=7
+			sprite.y+=10
+			double_jump=not double_jump
 		if game_state == states.MENU:
 			if symbol == key.DOWN:
 				selection+=1
@@ -42,7 +48,7 @@ class Window(pyglet.window.Window):
 					game_state=states.HISCORE
 				if selection == 2:
 					self.close()
-					
+			
 		if game_state == states.PAUSE:
 			if symbol == key.DOWN:
 				pause_selection+=1
@@ -57,12 +63,14 @@ class Window(pyglet.window.Window):
 					game_state = states.RUN
 				if pause_selection == 1:
 					game_state = states.MENU
-				
+
 		if game_state == states.RUN:
 			if symbol == key.ESCAPE:
 				game_state = states.PAUSE
-		
+
 def update(dt):
+	global score, double_jump
+	
 	for m in menu:
 		m.color=(255, 255, 255)
 	menu[selection].color=(100, 100, 0)
@@ -71,36 +79,53 @@ def update(dt):
 	pause_menu[pause_selection].color=(100, 100, 0)
 	
 	if game_state == states.RUN:
+		score+=0.1
+		scoretext.text="Score: "+str(int(score))
 		#background.x+=background.hspeed
-		terrain.progress()
+		terrain.progress(4)
 		sprite.x+=sprite.hspeed
 		terrain_y=terrain.get_y(sprite.x+(sprite.width/2)+terrain.terrain_progress)
 		if sprite.y<=terrain_y:
-			sprite.y=ground.y+ground.height
 			sprite.vspeed=0
 			sprite.y=terrain_y
+			double_jump=False
 		else:
 			sprite.vspeed+=sprite.gravity
 			sprite.y+=sprite.vspeed
 		if(sprite.y-5<=terrain_y):
 			sprite.y=terrain_y
-			if(keys[key.A]):
+			if(keys[key.LEFT]):
 				sprite.hspeed=-3
-			elif(keys[key.D]):
-				sprite.hspeed=3
+			elif(keys[key.RIGHT]):
+				sprite.hspeed=1
 			else:
-				sprite.hspeed=0
-			if(keys[key.SPACE]):
-				sprite.vspeed+=7
-				sprite.y+=10
-		if(sprite.x+sprite.width>=window.width):
-			sprite.x=window.width-sprite.width
-		if(sprite.x<=0):
-			sprite.x=0
+				sprite.hspeed=-1
+			#if(keys[key.SPACE]):
+				#sprite.vspeed+=7
+				#sprite.y+=10
+		else:
+			if(keys[key.LEFT]):
+				sprite.hspeed=-2
+			elif(keys[key.RIGHT]):
+				sprite.hspeed=1
+		if(sprite.x+sprite.width>=window.width-200):
+			sprite.x=window.width-sprite.width-200
+		if(sprite.x<=32):
+			pyglet.app.exit()
+			sprite.x=32
 		sprite.animate()
-			
 
 glEnable(GL_TEXTURE_2D)
+block=pyglet.image.load('block.png')
+loltexture=block.get_texture()
+glBindTexture(GL_TEXTURE_2D, loltexture.id);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+#glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, block.width, block.height, 0, GL_RGB, GL_UNSIGNED_BYTE, ctypes.byref(loltexture.image_data));
+
 
 class states():
 	RUN=0
@@ -122,15 +147,14 @@ pause=pyglet.sprite.Sprite(pyglet.resource.image('pause.png'))
 pause_quit=pyglet.sprite.Sprite(pyglet.resource.image('quit.png'),x=200, y=200)
 pause_menu=[resume, pause_quit]
 pause_selection=0
-#some nice music
-music = pyglet.resource.media('snow.ogg')
-music.play()
-#sound effects
 
+score=0.0
+double_jump=False
+scoretext=pyglet.text.Label("Score: ", font_name="Arial", font_size=16, x=0, y=600-24, color=(0,0,0,255))
 terrain=Terrain()
-sprite=Sprite(img="snubbe.png", x=100, y=500, width=32, height=32, gravity=-0.2)
+sprite=Sprite(img="snubbe.png", x=256, y=500, width=32, height=32, gravity=-0.2)
+wave=Sprite(img="wave.png", x=0, y=0, width=128, height=512)
 #background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed=-2)
-ground=Sprite(img="block.png", x=0, y=0, width=64, height=64, hspeed=-2)
 keys=key.KeyStateHandler()
 window=Window(width=800, height=600, caption="The Wave")
 window.push_handlers(keys)
