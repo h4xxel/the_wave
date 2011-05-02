@@ -9,7 +9,7 @@ import random
 
 class Window(pyglet.window.Window):
 	def on_draw(self):
-		global tex_sand
+		global tex_sand, health
 		for m in menu:
 			m.color=(255, 255, 255)
 		menu[selection].color=(100, 100, 0)
@@ -26,6 +26,10 @@ class Window(pyglet.window.Window):
 			sprite.draw()
 			scoretext.draw()
 			wave.draw()
+			
+			#healthbar
+			pyglet.graphics.draw(4, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", (16,600-32, 16,600-16, 116,600-32, 116,600-16)), ("c3B", (196,196,196, 196,196,196, 196,196,196, 196,196,196)))
+			pyglet.graphics.draw(4, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", (16,600-32, 16,600-16, 16+health,600-32, 16+health,600-16)), ("c3B", (0,255,0, 0,255,0, 0,255,0, 0,255,0)))
 			
 			#pyglet.graphics.draw(len(lolomg)/2, pyglet.gl.GL_POINTS, ("v2i", tuple(lolomg)), ("c3i", tuple(lolcol)))
 			
@@ -100,7 +104,7 @@ class Window(pyglet.window.Window):
 				game_state = States.MENU
 
 def update(dt):
-	global score, double_jump, game_state
+	global score, double_jump, game_state, health
 	if game_state == States.RUN:
 		
 		addobject=random.randint(1,100)
@@ -113,12 +117,15 @@ def update(dt):
 			k.y+=k.vspeed
 			k.x+=k.hspeed
 			if sprite.collision_with(k):
-				background_music.pause()
-				background_music.seek(0)
-				game_state=States.GAMEOVER
-				gameoversound.play()
+				health-=15
+				objectlist.remove(k)
 			if k.y<0:
 				objectlist.remove(k)
+		if(health<=0):
+			background_music.pause()
+			background_music.seek(0)
+			game_state=States.GAMEOVER
+			gameoversound.play()
 				
 		score+=0.1
 		scoretext.text="Score: "+str(int(score))
@@ -204,8 +211,9 @@ barrel=pyglet.resource.image('block.png')
 cache_image(barrel)
 
 score=0.0
+health=100
 double_jump=False
-scoretext=pyglet.text.Label("Score: ", font_name="Arial", font_size=16, x=0, y=600-24, color=(0,0,0,255))
+scoretext=pyglet.text.Label("Score: ", font_name="Arial", font_size=16, x=128, y=600-32, color=(0,0,0,255))
 terrain=Terrain()
 sprite=Sprite(img=pyglet.resource.image("canman.png"), x=256, y=150, width=150, height=188, gravity=-0.2)
 for i in sprite.animation.frames:
