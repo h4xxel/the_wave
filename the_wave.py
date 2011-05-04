@@ -6,16 +6,24 @@ from pyglet.gl import *
 from engine import *
 import ctypes
 import random
+import getpass
+import urllib
 
 class Window(pyglet.window.Window):
 	def on_draw(self):
-		global tex_sand, health
-		for m in menu:
-			m.color=(255, 255, 255)
-		menu[selection].color=(100, 100, 0)
-		for m in pause_menu:
-			m.color=(255, 255, 255)
-		pause_menu[pause_selection].color=(100, 100, 0)
+		global tex_sand, health, username, highscores
+		if game_state == States.MENU:
+			for m in menu:
+				m.color=(255, 255, 255, 255)
+			menu[selection].color=(100, 100, 0, 255)
+		if game_state == States.PAUSE:
+			for m in pause_menu:
+				m.color=(255, 255, 255, 255)
+			pause_menu[selection].color=(100, 100, 0, 255)
+		if game_state == States.GAMEOVER:
+			for m in over_menu:
+				m.color=(255, 255, 255, 255)
+			over_menu[selection].color=(100, 100, 0, 255)
 		window.clear()
 		if game_state == States.RUN:
 			glClearColor(0, 128, 128, 255)
@@ -33,31 +41,78 @@ class Window(pyglet.window.Window):
 			
 			#pyglet.graphics.draw(len(lolomg)/2, pyglet.gl.GL_POINTS, ("v2i", tuple(lolomg)), ("c3i", tuple(lolcol)))
 			
-			
+		if game_state == States.SUBMITSCORE:
+			glClearColor(0, 0, 0, 255)
+			pyglet.text.Label("Submitting score", font_name="Arial", font_size=64, x=64, y=500, color=(255,255,255,255)).draw()
+			pyglet.text.Label("Username: %s|" % username, font_name="Arial", font_size=20, x=100, y=300, color=(255,255,255,255)).draw()
+		if game_state == States.HISCORE:
+			glClearColor(0, 0, 0, 255)
+			for i in range(0, len(highscores)):
+				s=highscores[i][0:-1].partition(",")
+				pyglet.text.Label(s[0], font_name="Arial", font_size=20, x=64, y=500-32*i, color=(255,255,255,255)).draw()
+				pyglet.text.Label(s[2], font_name="Arial", font_size=20, x=600, y=500-32*i, color=(255,255,255,255)).draw()
 		if game_state == States.MENU:
-			bg.draw()
+			bg.blit(0,0)
 			for m in menu:
 				m.draw()
 		if game_state == States.PAUSE:
-			pause.draw()
+			pause.blit(0,0)
 			for m in pause_menu:
 				m.draw()
 		if game_state == States.GAMEOVER:
-			gameover.draw()
+			gameover.blit(0,0)
+			for m in over_menu:
+				m.draw()
+		if game_state == States.INSTRUCTIONS:
+			instructions.blit(0,0)
 		
 		#fps_display.draw() #show fps
+	
+	def on_text(self, text):
+		global username
+		#input text for submitting score
+		if(game_state==States.SUBMITSCORE and len(username)<16):
+			username+=text.replace("\n", "").replace("\r","").replace(",","")
+	
+	def on_text_motion(self, motion):
+		global username
+		if(game_state==States.SUBMITSCORE and motion==key.MOTION_BACKSPACE):
+			username=username[0:-1]
 
 	def on_key_press(self, symbol, modifiers):
-		global double_jump, selection, game_state, pause_selection, score,objectlist
-		if(symbol==key.SPACE and(sprite.y-5<=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress)) or double_jump==True)):
+		global double_jump, selection, game_state, score, objectlist, health, highscores, username
+		if(game_state==States.RUN and symbol==key.SPACE and(sprite.y-5<=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress)) or double_jump==True)):
 			djump.play() if double_jump else jump.play()
 			sprite.vspeed=7
 			sprite.y+=10
 			double_jump=not double_jump
+			
+		if game_state == States.HISCORE and(symbol == key.ENTER or symbol == key.ESCAPE):
+			game_state = States.MENU
+			symbol=None
+			
+		if game_state == States.INSTRUCTIONS and(symbol == key.ENTER or symbol == key.ESCAPE):
+			game_state = States.MENU
+			symbol=None
+		
+		if game_state == States.SUBMITSCORE:
+			if symbol == key.ENTER and len(username)>0:
+				try:
+					u=urllib.urlopen("http://h4xxel.ath.cx/software/wave/highscore_api.php?name=%s&score=%s" % (urllib.quote(username), urllib.quote(str(score))))
+					highscores=u.readlines()
+					u.close()
+				except:
+					highscores=["Please check your internet connection "]
+				game_state = States.HISCORE
+				symbol=None
+			if symbol == key.ESCAPE:
+				game_state=States.MENU
+				symbol=None
+		
 		if game_state == States.MENU:
 			if symbol == key.DOWN:
 				selection+=1
-				if selection == 3:
+				if selection == 4:
 					selection=0
 			if symbol == key.UP:
 				selection-=1
@@ -70,43 +125,86 @@ class Window(pyglet.window.Window):
 					objectlist=[]
 					terrain.regenerate()
 					sprite.x=256;sprite.y=terrain.get_y(sprite.x);sprite.hspeed=0;sprite.vspeed=0
+					health=100
 					background_music.play()
-					pyglet.clock.schedule(update)
-				if selection == 1: 
+					pyglet.clock.schedule_interval(update, 1.0/80.0)
+				if selection == 1:
+					game_state=States.INSTRUCTIONS
+					symbol=None
+				if selection == 2: 
 					game_state=States.HISCORE
-				if selection == 2:
+					try:
+						u=urllib.urlopen("http://h4xxel.ath.cx/software/wave/highscore_api.php")
+						highscores=u.readlines()
+						u.close()
+					except:
+						highscores=["Please check your internet connection "]
+				if selection == 3:
 					self.close()
 			
 		if game_state == States.PAUSE:
 			if symbol == key.DOWN:
-				pause_selection+=1
-				if pause_selection == 2:
-					pause_selection=0
+				selection+=1
+				if selection == 2:
+					selection=0
 			if symbol == key.UP:
-				pause_selection-=1
-				if pause_selection == -1:
-					pause_selection=1
+				selection-=1
+				if selection == -1:
+					selection=1
 			if symbol == key.RETURN:
-				if pause_selection == 0:
+				if selection == 0:
 					game_state = States.RUN
-				if pause_selection == 1:
+					background_music.play()
+				if selection == 1:
 					game_state = States.MENU
-					background_music.pause()
 					background_music.seek(0)
-
+		
+		if game_state == States.GAMEOVER:
+			if symbol == key.DOWN:
+				selection+=1
+				if selection == 2:
+					selection=0
+			if symbol == key.UP:
+				selection-=1
+				if selection == -1:
+					selection=1
+			if symbol == key.RETURN:
+				if selection == 0:
+					game_state = States.SUBMITSCORE
+					symbol=None
+					selection=0
+				if selection == 1:
+					game_state = States.MENU
+					background_music.seek(0)
+					symbol=None
+					selection=0
+			if symbol == key.ESCAPE:
+				game_state=States.MENU
+				symbol=None
+				selection=0
+				
 		if game_state == States.RUN:
 			if symbol == key.ESCAPE:
+				selection=0
 				game_state = States.PAUSE
+				background_music.pause()
 				
-		if game_state == States.GAMEOVER:
-			pyglet.clock.unschedule(update)
-			if symbol == key.ENTER or symbol == key.ESCAPE:
-				game_state = States.MENU
+		#~ if game_state == States.GAMEOVER:
+			#~ if symbol == key.ENTER:
+				#~ game_state=States.SUBMITSCORE
+				#~ symbol=None
+			#~ if symbol == key.ESCAPE:
+				#~ game_state=States.MENU
+				#~ symbol=None
+				#~ selection=0
+				#game_state = States.MENU
 
 def update(dt):
 	global score, double_jump, game_state, health
+	if game_state == States.GAMEOVER:
+		pyglet.clock.unschedule(update)
+		return
 	if game_state == States.RUN:
-		
 		addobject=random.randint(1,100)
 		
 		if addobject ==1 :
@@ -117,6 +215,7 @@ def update(dt):
 			k.y+=k.vspeed
 			k.x+=k.hspeed
 			if sprite.collision_with(k):
+				hitsound.play()
 				health-=15
 				objectlist.remove(k)
 			if k.y<0:
@@ -125,6 +224,7 @@ def update(dt):
 			background_music.pause()
 			background_music.seek(0)
 			game_state=States.GAMEOVER
+			selection=0
 			gameoversound.play()
 				
 		score+=0.1
@@ -166,6 +266,7 @@ def update(dt):
 			background_music.seek(0)
 			gameoversound.play()
 			game_state=States.GAMEOVER
+			selection=0
 
 img_sand=pyglet.image.load('sand.png')
 tex_sand=img_sand.get_texture()
@@ -175,24 +276,30 @@ class States():
 	MENU=1
 	PAUSE=2
 	HISCORE=3
-	GAMEOVER=4
+	SUBMITSCORE=4
+	GAMEOVER=5
+	INSTRUCTIONS=6
 
 game_state=States.MENU
-#menu
-bg=pyglet.sprite.Sprite(pyglet.resource.image('thewave.png'))
-start=pyglet.sprite.Sprite(pyglet.resource.image('start.png'),x=200, y=350)
-hiscore=pyglet.sprite.Sprite(pyglet.resource.image('hiscore.png'),x=200, y=200)
-quit=pyglet.sprite.Sprite(pyglet.resource.image('quit.png'),x=200, y=50)
-menu=[start, hiscore, quit]
 selection=0
+#menu
+bg=pyglet.resource.image('thewave.png')
+menu=[pyglet.text.Label("Start game",x=200, y=350, font_name="Arial", font_size=64),
+	pyglet.text.Label("Instructions",x=200, y=250, font_name="Arial", font_size=64),
+	pyglet.text.Label("Highscores",x=200, y=150, font_name="Arial", font_size=64),
+	pyglet.text.Label("Exit game",x=200, y=50, font_name="Arial", font_size=64)]
 #pause menu
-resume=pyglet.sprite.Sprite(pyglet.resource.image('start.png'),x=200, y=350)
-pause=pyglet.sprite.Sprite(pyglet.resource.image('pause.png'))
-pause_quit=pyglet.sprite.Sprite(pyglet.resource.image('quit.png'),x=200, y=200)
-pause_menu=[resume, pause_quit]
-pause_selection=0
+pause=pyglet.resource.image('pause.png')
+pause_menu=[
+	pyglet.text.Label("Resume game",x=200, y=300, font_name="Arial", font_size=64), 
+	pyglet.text.Label("Quit to menu",x=200, y=200, font_name="Arial", font_size=64)]
 #gameover
-gameover=pyglet.sprite.Sprite(pyglet.resource.image('gameover.png'))
+gameover=pyglet.resource.image('gameover.png')
+over_menu=[
+	pyglet.text.Label("Submit score",x=200, y=150, font_name="Arial", font_size=64), 
+	pyglet.text.Label("Quit to menu",x=200, y=50, font_name="Arial", font_size=64)]
+#instructions
+instructions=pyglet.resource.image('instructions.png')
 
 #akta diggggg
 addobject=0
@@ -202,12 +309,13 @@ objectlist=[]
 jump=pyglet.resource.media('jump.ogg',streaming=False)
 djump=pyglet.resource.media('djump.ogg',streaming=False)
 gameoversound=pyglet.resource.media('gameover.ogg',streaming=False)
+hitsound=pyglet.resource.media('hit.ogg', streaming=False)
 background_music=pyglet.media.Player()
 background_music.volume=0.5
 background_music.eos_action=pyglet.media.Player.EOS_LOOP
 background_music.queue(pyglet.resource.media('music.ogg'))
 
-barrel=pyglet.resource.image('block.png')
+barrel=pyglet.resource.image('barrel.png')
 cache_image(barrel)
 
 score=0.0
@@ -222,7 +330,17 @@ for i in sprite.animation.frames:
 wave=Sprite(img=pyglet.resource.image("wave.png"), x=0, y=0, width=128, height=512)
 #background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed=-2)
 keys=key.KeyStateHandler()
-window=Window(width=800, height=600, caption="The Wave")
+window=Window(width=800, height=600, caption="The Wave", vsync=False, visible=False)
 window.push_handlers(keys)
+window.set_icon(
+	pyglet.image.load("icon16.png"),
+	pyglet.image.load("icon32.png"),
+	pyglet.image.load("icon48.png")
+)
+window.set_visible(True) #make sure the window gets its icon
 fps_display = pyglet.clock.ClockDisplay()
+
+username=getpass.getuser()
+highscores=[]
+
 pyglet.app.run()

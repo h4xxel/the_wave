@@ -26,7 +26,7 @@ class Sprite(pyglet.sprite.Sprite):
 		self.gravity=gravity
 
 	def draw(self):
-		self.animation.blit(self.x, self.y)
+		self.animation.blit(self.x, self.y, self.color)
 
 	def animate(self):
 		self.animation.progress()
@@ -83,10 +83,12 @@ class Animation():
 		self.active_frame+=self.frames[int(self.active_frame)][1]
 		if(self.active_frame>=len(self.frames)): self.active_frame=0
 
-	def blit(self, x, y):
+	def blit(self, x, y, tint=(255, 255, 255)):
 		image=self.frames[int(self.active_frame)][0]
 		s=pyglet.sprite.Sprite(img=image, x=x, y=y)
+		s.color=tint
 		s.draw()
+		s.delete()
 
 	def get_width(self):
 		return self.frames[int(self.active_frame)][0].width
