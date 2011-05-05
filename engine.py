@@ -40,7 +40,8 @@ class Sprite(pyglet.sprite.Sprite):
 	def collision_with(self, sprite2):
 		#blunt check by bounding box
 		if(self.x+self.width>sprite2.x and self.x<sprite2.x+sprite2.width and self.y+self.height>sprite2.y and self.y<sprite2.y+sprite2.height):
-			#pixel perfect algorith based on https://swiftcoder.wordpress.com/2009/05/16/sprite-collision-revisited/
+			#pixel perfect collision algorithm based on https://swiftcoder.wordpress.com/2009/05/16/sprite-collision-revisited/
+			#new bsd license, see pixel-perfect-license
 			ir=(int(max(self.x, sprite2.x)), int(max(self.y, sprite2.y)), int(min(self.x+self.width, sprite2.x+sprite2.width)), int(min(self.y+self.width, sprite2.y+sprite2.height)))
 			i1=self.animation.frames[int(self.animation.active_frame)][0]
 			i2=sprite2.animation.frames[int(sprite2.animation.active_frame)][0]
@@ -98,29 +99,13 @@ class Animation():
 
 	width=property(get_width); height=property(get_height)
 
-#~ class AnimationFrame():
-	#~ image=None
-	#~ duration=None
-	#~ def __init__(self, image, duration):
-		#~ self.image=image
-		#~ self.duration=duration
-	#~ def __getitem__(self, lol):
-		#~ return [self.image, self.duration]
-
 class Terrain():
 	terrain=[]
 	texturemap=[]
 	terrain_progress=0
 	hole=0
 	hole_length=0
-	#~ def __init__(self):
-		#~ self.terrain=[0,100, 0,0, 100,100]
-		#~ self.texturemap=[0,1, 0,0, 1,1]
-		#~ for i in range(100, 800+200, 200):
-			#~ t_y=random.randint(50, 100)
-			#~ self.terrain.extend([i, 0, i+100,t_y, i+100,0, i+200,t_y])
-			#~ self.texturemap.extend([1.0,0, 0,float(t_y)/100.0, 0,0, 1.0,float(t_y)/100.0])
-			
+	
 	def regenerate(self):
 		self.terrain=[0,100, 0,0, 100,100]
 		self.texturemap=[0,1, 0,0, 1,1]
@@ -143,12 +128,14 @@ class Terrain():
 
 	def draw(self, texture):
 		#pyglet.graphics.draw(len(self.terrain)/2, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", tuple(self.terrain)))
+		
+		#setting up opengl to properly display the texture
 		glEnable(texture.target)
 		glTexParameteri(texture.target, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri (texture.target, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri (texture.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri (texture.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		#glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+		
 		glBindTexture(texture.target, texture.id)
 		pyglet.graphics.draw(len(self.terrain)/2, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", tuple(self.terrain)), ('t2f', tuple(self.texturemap)))
 		glDisable(texture.target)

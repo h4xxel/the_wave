@@ -127,7 +127,7 @@ class Window(pyglet.window.Window):
 					sprite.x=256;sprite.y=terrain.get_y(sprite.x);sprite.hspeed=0;sprite.vspeed=0
 					health=100
 					background_music.play()
-					pyglet.clock.schedule_interval(update, 1.0/80.0)
+					pyglet.clock.schedule_interval(update, 1.0/60.0)
 				if selection == 1:
 					game_state=States.INSTRUCTIONS
 					symbol=None
@@ -158,6 +158,7 @@ class Window(pyglet.window.Window):
 				if selection == 1:
 					game_state = States.MENU
 					background_music.seek(0)
+					selection=0
 		
 		if game_state == States.GAMEOVER:
 			if symbol == key.DOWN:
@@ -268,8 +269,6 @@ def update(dt):
 			game_state=States.GAMEOVER
 			selection=0
 
-img_sand=pyglet.image.load('sand.png')
-tex_sand=img_sand.get_texture()
 #~ glTexImage2D (tex_sand.target, 0, GL_RGB, block.width, block.height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_sand);
 class States():
 	RUN=0
@@ -279,6 +278,9 @@ class States():
 	SUBMITSCORE=4
 	GAMEOVER=5
 	INSTRUCTIONS=6
+
+pyglet.resource.path = ['res']
+pyglet.resource.reindex()
 
 game_state=States.MENU
 selection=0
@@ -318,6 +320,8 @@ background_music.queue(pyglet.resource.media('music.ogg'))
 barrel=pyglet.resource.image('barrel.png')
 cache_image(barrel)
 
+tex_sand=pyglet.resource.texture('sand.png')
+
 score=0.0
 health=100
 double_jump=False
@@ -333,9 +337,9 @@ keys=key.KeyStateHandler()
 window=Window(width=800, height=600, caption="The Wave", vsync=False, visible=False)
 window.push_handlers(keys)
 window.set_icon(
-	pyglet.image.load("icon16.png"),
-	pyglet.image.load("icon32.png"),
-	pyglet.image.load("icon48.png")
+	pyglet.resource.image("icon16.png"),
+	pyglet.resource.image("icon32.png"),
+	pyglet.resource.image("icon48.png")
 )
 window.set_visible(True) #make sure the window gets its icon
 fps_display = pyglet.clock.ClockDisplay()
