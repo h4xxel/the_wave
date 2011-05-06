@@ -38,6 +38,7 @@ class Window(pyglet.window.Window):
 			#healthbar
 			pyglet.graphics.draw(4, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", (16,600-32, 16,600-16, 116,600-32, 116,600-16)), ("c3B", (196,196,196, 196,196,196, 196,196,196, 196,196,196)))
 			pyglet.graphics.draw(4, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", (16,600-32, 16,600-16, 16+health,600-32, 16+health,600-16)), ("c3B", (0,255,0, 0,255,0, 0,255,0, 0,255,0)))
+			pyglet.graphics.draw(4, pyglet.gl.GL_POINTS, ("v2i", (-1,-1)), ("c3B", (255,255,255))) #small hack to avoid everything being tinted green..
 			
 			#pyglet.graphics.draw(len(lolomg)/2, pyglet.gl.GL_POINTS, ("v2i", tuple(lolomg)), ("c3i", tuple(lolcol)))
 			
