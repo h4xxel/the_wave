@@ -44,13 +44,15 @@ class Window(pyglet.window.Window):
 		if game_state == States.SUBMITSCORE:
 			glClearColor(0, 0, 0, 255)
 			pyglet.text.Label("Submitting score", font_name="Arial", font_size=64, x=64, y=500, color=(255,255,255,255)).draw()
-			pyglet.text.Label("Username: %s|" % username, font_name="Arial", font_size=20, x=100, y=300, color=(255,255,255,255)).draw()
+			pyglet.text.Label("Nickname: %s|" % username, font_name="Arial", font_size=20, x=100, y=300, color=(255,255,255,255)).draw()
+			pyglet.text.Label("Press enter to submit or escape to return to the menu", font_name="Arial", font_size=18, x=100, y=50, color=(255,255,255,255)).draw()
 		if game_state == States.HISCORE:
 			glClearColor(0, 0, 0, 255)
 			for i in range(0, len(highscores)):
 				s=highscores[i][0:-1].partition(",")
 				pyglet.text.Label(s[0], font_name="Arial", font_size=20, x=64, y=500-32*i, color=(255,255,255,255)).draw()
 				pyglet.text.Label(s[2], font_name="Arial", font_size=20, x=600, y=500-32*i, color=(255,255,255,255)).draw()
+			pyglet.text.Label("Press enter or escape to return to the menu", font_name="Arial", font_size=18, x=120, y=50, color=(255,255,255,255)).draw()
 		if game_state == States.MENU:
 			bg.blit(0,0)
 			for m in menu:
@@ -66,7 +68,7 @@ class Window(pyglet.window.Window):
 		if game_state == States.INSTRUCTIONS:
 			instructions.blit(0,0)
 		
-		#fps_display.draw() #show fps
+		fps_display.draw() #show fps
 	
 	def on_text(self, text):
 		global username
@@ -128,6 +130,9 @@ class Window(pyglet.window.Window):
 					health=100
 					background_music.play()
 					pyglet.clock.schedule_interval(update, 1.0/60.0)
+					pyglet.clock.schedule_interval(update, 1.0/60.0) #somehow this works and one schedule on 1/120 does not.. whatever
+					#pyglet.clock.schedule(update)
+					symbol=None
 				if selection == 1:
 					game_state=States.INSTRUCTIONS
 					symbol=None
@@ -156,6 +161,7 @@ class Window(pyglet.window.Window):
 					game_state = States.RUN
 					background_music.play()
 				if selection == 1:
+					pyglet.clock.unschedule(update)
 					game_state = States.MENU
 					background_music.seek(0)
 					selection=0
@@ -202,10 +208,7 @@ class Window(pyglet.window.Window):
 
 def update(dt):
 	global score, double_jump, game_state, health
-	if game_state == States.GAMEOVER:
-		pyglet.clock.unschedule(update)
-		return
-	if game_state == States.RUN:
+	if game_state == States.RUN: #just some extra redundancy.. we do not want to have a crash
 		addobject=random.randint(1,100)
 		
 		if addobject ==1 :
@@ -222,11 +225,13 @@ def update(dt):
 			if k.y<0:
 				objectlist.remove(k)
 		if(health<=0):
+			pyglet.clock.unschedule(update)
 			background_music.pause()
 			background_music.seek(0)
 			game_state=States.GAMEOVER
 			selection=0
 			gameoversound.play()
+			return
 				
 		score+=0.1
 		scoretext.text="Score: "+str(int(score))
@@ -263,11 +268,13 @@ def update(dt):
 		if(sprite.x+sprite.width>=window.width-50):
 			sprite.x=window.width-sprite.width-50
 		if(sprite.x<=-48) or (sprite.y<-48):
+			pyglet.clock.unschedule(update)
 			background_music.pause()
 			background_music.seek(0)
 			gameoversound.play()
 			game_state=States.GAMEOVER
 			selection=0
+			return
 
 #~ glTexImage2D (tex_sand.target, 0, GL_RGB, block.width, block.height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_sand);
 class States():
