@@ -11,7 +11,7 @@ import urllib
 
 class Window(pyglet.window.Window):
 	def on_draw(self):
-		global tex_sand, health, username, highscores
+		global tex_sand, health, username, highscores, backgrounds, background_progress
 		if game_state == States.MENU:
 			for m in menu:
 				m.color=(255, 255, 255, 255)
@@ -27,6 +27,21 @@ class Window(pyglet.window.Window):
 		window.clear()
 		if game_state == States.RUN:
 			glClearColor(0, 128, 128, 255)
+			bw=0
+			for i in range(0,len(backgrounds)-1):
+				bw+=backgrounds[i].width
+				if bw>=background_progress:
+					dx=int(bw-background_progress)
+					backgrounds[i].blit(dx-backgrounds[i].width,0)
+					if dx<self.width:
+						backgrounds[i+1].blit(dx,0)
+					break
+				if(i>=len(backgrounds)-2):
+					background_progress-=float(backgrounds[i].width+backgrounds[i+1].width)
+					backgrounds[-1].blit(0,0)
+					break
+					
+			
 			#background.draw()
 			terrain.draw(tex_sand)
 			for k in objectlist:
@@ -38,7 +53,7 @@ class Window(pyglet.window.Window):
 			#healthbar
 			pyglet.graphics.draw(4, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", (16,600-32, 16,600-16, 116,600-32, 116,600-16)), ("c3B", (196,196,196, 196,196,196, 196,196,196, 196,196,196)))
 			pyglet.graphics.draw(4, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", (16,600-32, 16,600-16, 16+health,600-32, 16+health,600-16)), ("c3B", (0,255,0, 0,255,0, 0,255,0, 0,255,0)))
-			pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ("v2i", (-1,-1)), ("c3B", (255,255,255))) #small hack to avoid everything being tinted green..
+			pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ("v2i", (-1,-1)), ("c3B", (255,255,255))) #small hack to avoid everything being tinted green on faildows..
 			
 			#pyglet.graphics.draw(len(lolomg)/2, pyglet.gl.GL_POINTS, ("v2i", tuple(lolomg)), ("c3i", tuple(lolcol)))
 			
@@ -83,7 +98,7 @@ class Window(pyglet.window.Window):
 			username=username[0:-1]
 
 	def on_key_press(self, symbol, modifiers):
-		global double_jump, selection, game_state, score, objectlist, health, highscores, username
+		global double_jump, selection, game_state, score, objectlist, health, highscores, username, background_progress
 		if(game_state==States.RUN and symbol==key.SPACE and(sprite.y-5<=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress)) or double_jump==True)):
 			djump.play() if double_jump else jump.play()
 			sprite.vspeed=7
@@ -129,6 +144,7 @@ class Window(pyglet.window.Window):
 					terrain.regenerate()
 					sprite.x=256;sprite.y=terrain.get_y(sprite.x);sprite.hspeed=0;sprite.vspeed=0
 					health=100
+					background_progress=0.0
 					background_music.play()
 					pyglet.clock.schedule_interval(update, 1.0/60.0)
 					pyglet.clock.schedule_interval(update, 1.0/60.0) #somehow this works and one schedule on 1/120 does not.. whatever
@@ -208,7 +224,7 @@ class Window(pyglet.window.Window):
 				#game_state = States.MENU
 
 def update(dt):
-	global score, double_jump, game_state, health
+	global score, double_jump, game_state, health, background_progress
 	if game_state == States.RUN: #just some extra redundancy.. we do not want to have a crash
 		addobject=random.randint(1,100)
 		
@@ -235,8 +251,9 @@ def update(dt):
 			return
 				
 		score+=0.1
+		background_progress+=1
 		scoretext.text="Score: "+str(int(score))
-		background.x+=background.hspeed
+		#background.x+=background.hspeed
 		terrain.progress(4)
 		terrain_y=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))
 		if sprite.y<=terrain_y:
@@ -330,6 +347,19 @@ cache_image(barrel)
 
 tex_sand=pyglet.resource.texture('sand.png')
 
+backgrounds=(
+	pyglet.resource.image("beach1.png"),
+	pyglet.resource.image("beach2.png"),
+	pyglet.resource.image("forrest1.png"),
+	pyglet.resource.image("forrest2.png"),
+	pyglet.resource.image("pplant1.png"),
+	pyglet.resource.image("pplant2.png"),
+	pyglet.resource.image("city1.png"),
+	pyglet.resource.image("city2.png"),
+	pyglet.resource.image("city1.png")
+)
+background_progress=0.0
+
 score=0.0
 health=100
 double_jump=False
@@ -340,7 +370,7 @@ for i in sprite.animation.frames:
 	cache_image(i[0])
 
 wave=Sprite(img=pyglet.resource.image("wave.png"), x=0, y=0, width=128, height=512)
-background=Sprite(img=pyglet.resource.image("pplant1.png"), x=0, y=0, width=1077, height=600, hspeed=-0.5)
+#background=Sprite(img=pyglet.resource.image("city1.png"), x=0, y=0, width=1077, height=600, hspeed=-0.5)
 keys=key.KeyStateHandler()
 window=Window(width=800, height=600, caption="The Wave", vsync=False, visible=False)
 window.push_handlers(keys)
