@@ -99,11 +99,16 @@ class Window(pyglet.window.Window):
 
 	def on_key_press(self, symbol, modifiers):
 		global double_jump, selection, game_state, score, objectlist, health, highscores, username, background_progress
-		if(game_state==States.RUN and symbol==key.SPACE and(sprite.y-5<=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress)) or double_jump==True)):
-			djump.play() if double_jump else jump.play()
-			sprite.vspeed=7
-			sprite.y+=10
-			double_jump=not double_jump
+		if(game_state==States.RUN):
+			if(symbol==key.SPACE and(sprite.y-5<=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress)) or double_jump==True)):
+				djump.play() if double_jump else jump.play()
+				sprite.vspeed=7
+				sprite.y+=10
+				double_jump=not double_jump
+			elif symbol==key.PLUS and background_music.volume<1:
+				background_music.volume+=0.1
+			elif symbol==key.MINUS and background_music.volume>0:
+				background_music.volume-=0.1
 			
 		if game_state == States.HISCORE and(symbol == key.ENTER or symbol == key.ESCAPE):
 			game_state = States.MENU
@@ -283,6 +288,7 @@ def update(dt):
 				sprite.hspeed=-2
 			elif(keys[key.RIGHT]):
 				sprite.hspeed=1
+		#sprite.y=300; sprite.x=400 # I am too awesome for this game
 		if(sprite.x+sprite.width>=window.width-50):
 			sprite.x=window.width-sprite.width-50
 		if(sprite.x<=-48) or (sprite.y<-48):
