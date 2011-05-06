@@ -38,7 +38,7 @@ class Window(pyglet.window.Window):
 			#healthbar
 			pyglet.graphics.draw(4, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", (16,600-32, 16,600-16, 116,600-32, 116,600-16)), ("c3B", (196,196,196, 196,196,196, 196,196,196, 196,196,196)))
 			pyglet.graphics.draw(4, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", (16,600-32, 16,600-16, 16+health,600-32, 16+health,600-16)), ("c3B", (0,255,0, 0,255,0, 0,255,0, 0,255,0)))
-			pyglet.graphics.draw(4, pyglet.gl.GL_POINTS, ("v2i", (-1,-1)), ("c3B", (255,255,255))) #small hack to avoid everything being tinted green..
+			pyglet.graphics.draw(1, pyglet.gl.GL_POINTS, ("v2i", (-1,-1)), ("c3B", (255,255,255))) #small hack to avoid everything being tinted green..
 			
 			#pyglet.graphics.draw(len(lolomg)/2, pyglet.gl.GL_POINTS, ("v2i", tuple(lolomg)), ("c3i", tuple(lolcol)))
 			
@@ -69,7 +69,7 @@ class Window(pyglet.window.Window):
 		if game_state == States.INSTRUCTIONS:
 			instructions.blit(0,0)
 		
-		fps_display.draw() #show fps
+		#fps_display.draw() #show fps
 	
 	def on_text(self, text):
 		global username
@@ -236,7 +236,7 @@ def update(dt):
 				
 		score+=0.1
 		scoretext.text="Score: "+str(int(score))
-		#background.x+=background.hspeed
+		background.x+=background.hspeed
 		terrain.progress(4)
 		terrain_y=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))
 		if sprite.y<=terrain_y:
@@ -287,7 +287,7 @@ class States():
 	GAMEOVER=5
 	INSTRUCTIONS=6
 
-pyglet.resource.path = ['res']
+pyglet.resource.path = ['res', 'res/backgrounds']
 pyglet.resource.reindex()
 
 game_state=States.MENU
@@ -340,7 +340,7 @@ for i in sprite.animation.frames:
 	cache_image(i[0])
 
 wave=Sprite(img=pyglet.resource.image("wave.png"), x=0, y=0, width=128, height=512)
-#background=Sprite(img="background.png", x=0, y=0, width=1600, height=600, hspeed=-2)
+background=Sprite(img=pyglet.resource.image("pplant1.png"), x=0, y=0, width=1077, height=600, hspeed=-0.5)
 keys=key.KeyStateHandler()
 window=Window(width=800, height=600, caption="The Wave", vsync=False, visible=False)
 window.push_handlers(keys)
