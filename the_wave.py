@@ -10,7 +10,7 @@ import getpass
 import urllib
 
 class Window(pyglet.window.Window):
-	def on_draw(self):
+ 	def on_draw(self):
 		global tex_sand, health, username, highscores, backgrounds, background_progress
 		if game_state == States.MENU:
 			for m in menu:
@@ -46,6 +46,8 @@ class Window(pyglet.window.Window):
 			terrain.draw(tex_sand)
 			for k in objectlist:
 				k.draw()
+			for m in medkitlist:
+				m.draw()
 			sprite.draw()
 			scoretext.draw()
 			wave.draw()
@@ -140,7 +142,7 @@ class Window(pyglet.window.Window):
 			if symbol == key.UP:
 				selection-=1
 				if selection == -1:
-					selection=2
+					selection=3
 			if symbol == key.RETURN:
 				if selection == 0:
 					game_state=States.RUN
@@ -232,8 +234,7 @@ def update(dt):
 	global score, double_jump, game_state, health, background_progress
 	if game_state == States.RUN: #just some extra redundancy.. we do not want to have a crash
 		addobject=random.randint(1,100)
-		
-		if addobject ==1 :
+		if addobject==1:
 			objectlist.append(Sprite(img=barrel, x=random.randint(300,1000), y=600, width=32, height=32, gravity=-0.2))
 		for k in objectlist:
 			k.hspeed=-random.randint(1,4)
@@ -246,6 +247,32 @@ def update(dt):
 				objectlist.remove(k)
 			if k.y<0:
 				objectlist.remove(k)
+				
+		terrain.progress(4)
+		addmedkit=random.randint(1,500)
+		if addmedkit==1:
+			medkitlist.append(Sprite(img=medkit,x=random.randint(500,1000), y=600, width=32, height=32, gravity=-0.2))
+		for m in medkitlist:
+			if m.x<800:
+				terrain_m=terrain.get_y(int(m.x+(m.width/2)+terrain.terrain_progress))
+				if m.y<=terrain_m:
+					m.y=terrain_m 
+					m.hspeed=-4
+					m.x+=m.hspeed
+				else:
+					m.hspeed=-random.randint(1,4)
+					m.x+=m.hspeed
+					m.vspeed+=m.gravity
+					m.y+=m.vspeed
+			elif m.y<0 and m.x>800:
+				m.y=150
+			if sprite.collision_with(m):
+				#hitsound.play()
+				health+=10
+				medkitlist.remove(m)
+			if m.y<0:
+				medkitlist.remove(m)
+		
 		if(health<=0):
 			pyglet.clock.unschedule(update)
 			background_music.pause()
@@ -259,7 +286,7 @@ def update(dt):
 		background_progress+=1
 		scoretext.text="Score: "+str(int(score))
 		#background.x+=background.hspeed
-		terrain.progress(4)
+		#terrain.progress(4)
 		terrain_y=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))
 		if sprite.y<=terrain_y:
 			sprite.vspeed=0
@@ -338,6 +365,10 @@ instructions=pyglet.resource.image('instructions.png')
 addobject=0
 objectlist=[]
 
+#medkitzz
+addmedkit=0
+medkitlist=[]
+
 #sound effects
 jump=pyglet.resource.media('jump.ogg',streaming=False)
 djump=pyglet.resource.media('djump.ogg',streaming=False)
@@ -350,6 +381,9 @@ background_music.queue(pyglet.resource.media('music.ogg'))
 
 barrel=pyglet.resource.image('barrel.png')
 cache_image(barrel)
+
+medkit=pyglet.resource.image('medkit.png')
+cache_image(medkit)
 
 tex_sand=pyglet.resource.texture('sand.png')
 
@@ -372,7 +406,7 @@ double_jump=False
 scoretext=pyglet.text.Label("Score: ", font_name="Arial", font_size=16, x=128, y=600-32, color=(0,0,0,255))
 terrain=Terrain()
 sprite=Sprite(img=pyglet.resource.image("canman.png"), x=256, y=150, width=150, height=188, gravity=-0.2)
-for i in sprite.animation.frames:
+for i in sprite.animation.frames: 
 	cache_image(i[0])
 
 wave=Sprite(img=pyglet.resource.image("wave.png"), x=0, y=0, width=128, height=512)
