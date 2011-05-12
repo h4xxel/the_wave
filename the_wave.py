@@ -10,20 +10,27 @@ import getpass
 import urllib
 
 class Window(pyglet.window.Window):
+	def on_close(self):
+		global game_state
+		if game_state==States.RUN:
+			game_state=States.PAUSE
+		else:
+			pyglet.app.exit()
+	
 	def on_draw(self):
 		global tex_sand, health, username, highscores, backgrounds, background_progress
 		if game_state == States.MENU:
 			for m in menu:
 				m.color=(255, 255, 255, 255)
-			menu[selection].color=(100, 100, 0, 255)
+			menu[selection].color=(128, 0, 0, 255)
 		if game_state == States.PAUSE:
 			for m in pause_menu:
 				m.color=(255, 255, 255, 255)
-			pause_menu[selection].color=(100, 100, 0, 255)
+			pause_menu[selection].color=(128, 0, 0, 255)
 		if game_state == States.GAMEOVER:
 			for m in over_menu:
 				m.color=(255, 255, 255, 255)
-			over_menu[selection].color=(100, 100, 0, 255)
+			over_menu[selection].color=(128, 0, 0, 255)
 		window.clear()
 		if game_state == States.RUN:
 			glClearColor(0, 128, 128, 255)
@@ -74,7 +81,30 @@ class Window(pyglet.window.Window):
 			for m in menu:
 				m.draw()
 		if game_state == States.PAUSE:
-			pause.blit(0,0)
+			bw=0
+			for i in range(0,len(backgrounds)-1):
+				bw+=backgrounds[i].width
+				if bw>=background_progress:
+					dx=int(bw-background_progress)
+					backgrounds[i].blit(dx-backgrounds[i].width,0)
+					if dx<self.width:
+						backgrounds[i+1].blit(dx,0)
+					break
+				if(i>=len(backgrounds)-2):
+					background_progress-=float(backgrounds[i].width+backgrounds[i+1].width)
+					backgrounds[-1].blit(0,0)
+					break
+			terrain.draw(tex_sand)
+			for k in objectlist:
+				k.draw()
+			sprite.draw()
+			wave.draw()
+			#darken the screen when paused
+			glEnable (GL_BLEND)
+			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			pyglet.graphics.draw(4, pyglet.gl.GL_TRIANGLE_STRIP, ("v2i", (0,0, 0,600, 800,0, 800,600)), ("c4B", (0,0,0,196, 0,0,0,196, 0,0,0,196, 0,0,0,196)))
+			pyglet.text.Label("Game Paused", font_name="Arial", font_size=64, x=128, y=500, color=(255,255,255,255)).draw()
+			glDisable(GL_BLEND)
 			for m in pause_menu:
 				m.draw()
 		if game_state == States.GAMEOVER:
@@ -140,7 +170,7 @@ class Window(pyglet.window.Window):
 			if symbol == key.UP:
 				selection-=1
 				if selection == -1:
-					selection=2
+					selection=len(menu)-1
 			if symbol == key.RETURN:
 				if selection == 0:
 					game_state=States.RUN
@@ -288,7 +318,7 @@ def update(dt):
 				sprite.hspeed=-2
 			elif(keys[key.RIGHT]):
 				sprite.hspeed=1
-		#sprite.y=300; sprite.x=400 # I am too awesome for this game
+		#sprite.y=300; sprite.x=400; health=100 # I am too awesome for this game
 		if(sprite.x+sprite.width>=window.width-50):
 			sprite.x=window.width-sprite.width-50
 		if(sprite.x<=-48) or (sprite.y<-48):
@@ -316,21 +346,20 @@ pyglet.resource.reindex()
 game_state=States.MENU
 selection=0
 #menu
-bg=pyglet.resource.image('thewave.png')
-menu=[pyglet.text.Label("Start game",x=200, y=350, font_name="Arial", font_size=64),
-	pyglet.text.Label("Instructions",x=200, y=250, font_name="Arial", font_size=64),
-	pyglet.text.Label("Highscores",x=200, y=150, font_name="Arial", font_size=64),
-	pyglet.text.Label("Exit game",x=200, y=50, font_name="Arial", font_size=64)]
+bg=pyglet.resource.image('menu.png')
+menu=[pyglet.text.Label("Start game",x=128, y=350, font_name="Arial", font_size=64),
+	pyglet.text.Label("Instructions",x=128, y=250, font_name="Arial", font_size=64),
+	pyglet.text.Label("Highscores",x=128, y=150, font_name="Arial", font_size=64),
+	pyglet.text.Label("Exit game",x=128, y=50, font_name="Arial", font_size=64)]
 #pause menu
-pause=pyglet.resource.image('pause.png')
 pause_menu=[
-	pyglet.text.Label("Resume game",x=200, y=300, font_name="Arial", font_size=64), 
-	pyglet.text.Label("Quit to menu",x=200, y=200, font_name="Arial", font_size=64)]
+	pyglet.text.Label("Resume game",x=128, y=300, font_name="Arial", font_size=64), 
+	pyglet.text.Label("Quit to menu",x=128, y=200, font_name="Arial", font_size=64)]
 #gameover
 gameover=pyglet.resource.image('gameover.png')
 over_menu=[
-	pyglet.text.Label("Submit score",x=200, y=150, font_name="Arial", font_size=64), 
-	pyglet.text.Label("Quit to menu",x=200, y=50, font_name="Arial", font_size=64)]
+	pyglet.text.Label("Submit score",x=128, y=150, font_name="Arial", font_size=64), 
+	pyglet.text.Label("Quit to menu",x=128, y=50, font_name="Arial", font_size=64)]
 #instructions
 instructions=pyglet.resource.image('instructions.png')
 

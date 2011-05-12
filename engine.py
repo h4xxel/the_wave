@@ -19,7 +19,7 @@ class Sprite(pyglet.sprite.Sprite):
 		frames=[]
 		#image=pyglet.resource.image(img)
 		for i in range(0, img.width, width):
-			frames.append([img.get_region(i, 0, width, height), 0.2])
+			frames.append([img.get_region(i, 0, width, height), 0.15])
 		self.animation=Animation(frames)
 		self.x=x; self.y=y
 		self.hspeed=hspeed; self.vspeed=vspeed
