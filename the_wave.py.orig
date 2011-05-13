@@ -17,6 +17,7 @@ class SplashScreen(pyglet.window.Window):
 		splash_background.blit(0, 0)
 
 class Window(pyglet.window.Window):
+<<<<<<< HEAD
 	def on_close(self):
 		global game_state
 		if game_state==States.RUN:
@@ -25,6 +26,9 @@ class Window(pyglet.window.Window):
 			pyglet.app.exit()
 	
 	def on_draw(self):
+=======
+ 	def on_draw(self):
+>>>>>>> FETCH_HEAD
 		global tex_sand, health, username, highscores, backgrounds, background_progress
 		if game_state == States.MENU:
 			for m in menu:
@@ -179,7 +183,11 @@ class Window(pyglet.window.Window):
 			if symbol == key.UP:
 				selection-=1
 				if selection == -1:
+<<<<<<< HEAD
 					selection=len(menu)-1
+=======
+					selection=3
+>>>>>>> FETCH_HEAD
 			if symbol == key.RETURN:
 				if selection == 0:
 					game_state=States.RUN
@@ -271,9 +279,14 @@ def update(dt):
 	global score, double_jump, game_state, health, background_progress
 	if game_state == States.RUN: #just some extra redundancy.. we do not want to have a crash
 		addobject=random.randint(1,100)
+<<<<<<< HEAD
 		
 		if addobject ==1 :
 			objectlist.append(Sprite(img=barrel, x=random.randint(300,1000), y=600, width=64, height=64, gravity=-0.2, anchor_x=32, anchor_y=32))
+=======
+		if addobject==1:
+			objectlist.append(Sprite(img=barrel, x=random.randint(300,1000), y=600, width=32, height=32, gravity=-0.2))
+>>>>>>> FETCH_HEAD
 		for k in objectlist:
 			k.hspeed=-random.randint(1,4)
 			k.vspeed+=k.gravity
@@ -368,7 +381,7 @@ def update(dt):
 			return
 			
 def init(dt):
-	global bg, menu, pause_menu, gameover, over_menu, instructions, jump, djump, gameoversound, hitsound, background_music, barrel, medkit, tex_sand, backgrounds, scoretext, terrain, sprite, window, keys, splash_window, fps_display, wave
+	global bg, menu, pause_menu, gameover, over_menu, instructions, jump, djump, gameoversound, hitsound, background_music, barrel, tex_sand, backgrounds, scoretext, terrain, sprite, window, keys, splash_window, fps_display, wave
 	#menu
 	bg=pyglet.resource.image('menu.png')
 	menu=[pyglet.text.Label("Start game",x=128, y=350, font_name="Arial", font_size=64),
@@ -399,8 +412,6 @@ def init(dt):
 
 	barrel=pyglet.resource.image('barrel.png')
 	cache_image(barrel)
-	medkit=pyglet.resource.image('medkit.png')
-	cache_image(medkit)
 
 	tex_sand=pyglet.resource.texture('sand.png')
 
@@ -486,9 +497,15 @@ hitsound=None
 background_music=None
 
 barrel=None
-medkit=None
 
+<<<<<<< HEAD
 tex_sand=None
+=======
+medkit=pyglet.resource.image('medkit.png')
+cache_image(medkit)
+
+tex_sand=pyglet.resource.texture('sand.png')
+>>>>>>> FETCH_HEAD
 
 backgrounds=None
 background_progress=0.0
@@ -496,9 +513,17 @@ background_progress=0.0
 score=0.0
 health=100
 double_jump=False
+<<<<<<< HEAD
 scoretext=None
 terrain=None
 sprite=None
+=======
+scoretext=pyglet.text.Label("Score: ", font_name="Arial", font_size=16, x=128, y=600-32, color=(0,0,0,255))
+terrain=Terrain()
+sprite=Sprite(img=pyglet.resource.image("canman.png"), x=256, y=150, width=150, height=188, gravity=-0.2)
+for i in sprite.animation.frames: 
+	cache_image(i[0])
+>>>>>>> FETCH_HEAD
 
 wave=None
 keys=key.KeyStateHandler()
