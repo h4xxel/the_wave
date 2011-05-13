@@ -273,12 +273,15 @@ class Window(pyglet.window.Window):
 				#game_state = States.MENU
 
 def update(dt):
-	global score, double_jump, game_state, health, background_progress, boost
+	global score, double_jump, game_state, health, background_progress, boost, addobject
 	if game_state == States.RUN: #just some extra redundancy.. we do not want to have a crash
-		addobject=random.randint(1,100)
 		#start dropping barrels when approaching the power plant
-		if addobject ==1 and score>750 :
-			objectlist.append(Sprite(img=barrel, x=random.randint(300,1000), y=600, width=64, height=64, gravity=-0.2, anchor_x=32, anchor_y=32))
+		if score>700:
+			if addobject==0:
+				alertsound.play()
+			addobject=random.randint(1,100)
+			if addobject ==1:
+				objectlist.append(Sprite(img=barrel, x=random.randint(300,1000), y=600, width=64, height=64, gravity=-0.2, anchor_x=32, anchor_y=32))
 		for k in objectlist:
 			k.hspeed=-random.randint(1,4)
 			k.vspeed+=k.gravity
@@ -391,7 +394,10 @@ def update(dt):
 		if house.x<-500:
 			house.x=800+random.randint(200, 600)
 			house.animation.active_frame=0
-		if house.x<600 and house.animation.active_frame<len(house.animation.frames)-1: house.animate()
+		if house.x<600 and house.animation.active_frame<len(house.animation.frames)-1: 
+			if(house.animation.active_frame==0.0):
+				collapse.play()
+			house.animate()
 		
 		#sprite.y=300; sprite.x=400; health=100 # I am too awesome for this game
 		if(sprite.x+sprite.width>=window.width-100):
@@ -408,7 +414,7 @@ def update(dt):
 def init(dt):
 	global bg, menu, pause_menu, gameover, over_menu, instructions, jump, djump, gameoversound, hitsound, \
 		background_music, house, barrel, medkit, tex_sand, backgrounds, scoretext, terrain, sprite, window, keys, \
-		splash_window, fps_display, wave
+		splash_window, fps_display, wave, collapse, alertsound
 	#menu
 	bg=pyglet.resource.image('menu.png')
 	menu=[pyglet.text.Label("Start game",x=128, y=350, font_name="Arial", font_size=64),
@@ -430,8 +436,10 @@ def init(dt):
 	#sound effects
 	jump=pyglet.resource.media('jump.ogg',streaming=False)
 	djump=pyglet.resource.media('djump.ogg',streaming=False)
+	collapse=pyglet.resource.media('collapse.ogg',streaming=False)
 	gameoversound=pyglet.resource.media('gameover.ogg',streaming=False)
 	hitsound=pyglet.resource.media('hit.ogg', streaming=False)
+	alertsound=pyglet.resource.media('warning.ogg', streaming=False)
 	background_music=pyglet.media.Player()
 	background_music.volume=0.5
 	background_music.eos_action=pyglet.media.Player.EOS_LOOP
@@ -525,8 +533,10 @@ boost=0
 #sound effects
 jump=None
 djump=None
+collapse=None
 gameoversound=None
 hitsound=None
+alertsound=None
 background_music=None
 
 house=None
