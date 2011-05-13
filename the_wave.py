@@ -64,6 +64,7 @@ class Window(pyglet.window.Window):
 				m.draw()
 			sprite.draw()
 			scoretext.draw()
+			house.draw()
 			wave.draw()
 			
 			#healthbar
@@ -139,7 +140,10 @@ class Window(pyglet.window.Window):
 	def on_key_press(self, symbol, modifiers):
 		global double_jump, selection, game_state, score, objectlist, health, highscores, username, background_progress
 		if(game_state==States.RUN):
-			if(symbol==key.SPACE and(sprite.y-5<=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress)) or double_jump==True)):
+			terrain_y=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))
+			if(sprite.x>house.x and sprite.x<house.x+house.width):
+				terrain_y=200
+			if(symbol==key.SPACE and(sprite.y-5<=terrain_y or double_jump==True)):
 				djump.play() if double_jump else jump.play()
 				sprite.vspeed=7
 				sprite.y+=10
@@ -187,6 +191,7 @@ class Window(pyglet.window.Window):
 					objectlist=[]
 					terrain.regenerate()
 					sprite.x=256;sprite.y=terrain.get_y(sprite.x);sprite.hspeed=0;sprite.vspeed=0
+					house.x=1000
 					health=100
 					background_progress=0.0
 					background_music.play()
@@ -268,11 +273,11 @@ class Window(pyglet.window.Window):
 				#game_state = States.MENU
 
 def update(dt):
-	global score, double_jump, game_state, health, background_progress
+	global score, double_jump, game_state, health, background_progress, boost
 	if game_state == States.RUN: #just some extra redundancy.. we do not want to have a crash
 		addobject=random.randint(1,100)
-		
-		if addobject ==1 :
+		#start dropping barrels when approaching the power plant
+		if addobject ==1 and score>750 :
 			objectlist.append(Sprite(img=barrel, x=random.randint(300,1000), y=600, width=64, height=64, gravity=-0.2, anchor_x=32, anchor_y=32))
 		for k in objectlist:
 			k.hspeed=-random.randint(1,4)
@@ -289,7 +294,8 @@ def update(dt):
 				
 		terrain.progress(4)
 		addmedkit=random.randint(1,500)
-		if addmedkit==1:
+		#and we don't need medkits until we have barrels
+		if addmedkit==1 and score>800:
 			medkitlist.append(Sprite(img=medkit,x=random.randint(500,1000), y=600, width=32, height=32, gravity=-0.2))
 		for m in medkitlist:
 			if m.x<800:
@@ -303,7 +309,7 @@ def update(dt):
 					m.x+=m.hspeed
 					m.vspeed+=m.gravity
 					m.y+=m.vspeed
-			elif m.y<0 and m.x>800:
+			elif m.y<0 or m.x>800:
 				m.y=150
 			if sprite.collision_with(m):
 				#hitsound.play()
@@ -311,6 +317,7 @@ def update(dt):
 				medkitlist.remove(m)
 			if m.y<0:
 				medkitlist.remove(m)
+		if(health>100): health=100
 		
 		if(health<=0):
 			pyglet.clock.unschedule(update)
@@ -327,37 +334,68 @@ def update(dt):
 		#background.x+=background.hspeed
 		#terrain.progress(4)
 		terrain_y=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))
-		wave.animate()
-		if sprite.y<=terrain_y:
-			sprite.vspeed=0
-			sprite.hspeed-=terrain.get_slope(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))*0.8
-			sprite.y=terrain_y
-			double_jump=False
-		else:
-			sprite.vspeed+=sprite.gravity
-			sprite.y+=sprite.vspeed
-		sprite.x+=sprite.hspeed
-		if(sprite.y-5<=terrain_y):
-			sprite.animate()
-			sprite.y=terrain_y
-			if(keys[key.LEFT]):
-				sprite.hspeed=-4 
-			elif(keys[key.RIGHT]):
-				sprite.hspeed=2
+		if(sprite.x+sprite.width/4>house.x and sprite.x<house.x+house.width-200):
+			if sprite.y>200-6:
+				terrain_y=200
+			sprite.x+=sprite.hspeed
+			if(sprite.y-5<=terrain_y) and not(sprite.vspeed>0):
+				sprite.vspeed=0
+				#sprite.hspeed-=terrain.get_slope(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))*0.8
+				sprite.y=terrain_y
+				double_jump=False
+				
+				sprite.animate()
+				if(keys[key.LEFT]):
+					sprite.hspeed=-5-boost
+				elif(keys[key.RIGHT]):
+					sprite.hspeed=2+boost if terrain_y==200 else -4
+				else:
+					sprite.hspeed=-1 if terrain_y==200 else -4
 			else:
-				sprite.hspeed=-1
-			#if(keys[key.SPACE]):
-				#sprite.vspeed+=7
-				#sprite.y+=10
+				sprite.vspeed+=sprite.gravity
+				sprite.y+=sprite.vspeed
+				sprite.animation.active_frame=8+int(double_jump)
+				if(keys[key.LEFT]):
+					sprite.hspeed=-2-boost
+				elif(keys[key.RIGHT]):
+					sprite.hspeed=1+boost if terrain_y==200 else -4
+				
 		else:
-			sprite.animation.active_frame=8+int(double_jump)
-			if(keys[key.LEFT]):
-				sprite.hspeed=-2
-			elif(keys[key.RIGHT]):
-				sprite.hspeed=1
+			if(sprite.y<=terrain_y):
+				sprite.hspeed-=terrain.get_slope(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))*0.8
+			sprite.x+=sprite.hspeed
+			if(sprite.y-5<=terrain_y):
+				sprite.vspeed=0
+				sprite.y=terrain_y
+				double_jump=False
+				
+				sprite.animate()
+				if(keys[key.LEFT]):
+					sprite.hspeed=-5-boost
+				elif(keys[key.RIGHT]):
+					sprite.hspeed=2+boost
+				else:
+					sprite.hspeed=-1
+			else:
+				sprite.vspeed+=sprite.gravity
+				sprite.y+=sprite.vspeed
+				sprite.animation.active_frame=8+int(double_jump)
+				if(keys[key.LEFT]):
+					sprite.hspeed=-2-boost
+				elif(keys[key.RIGHT]):
+					sprite.hspeed=1+boost
+		
+		wave.animate()
+		#when we reach the city we create foreground houses as well
+		if score>1400: house.x+=house.hspeed
+		if house.x<-500:
+			house.x=800+random.randint(200, 600)
+			house.animation.active_frame=0
+		if house.x<600 and house.animation.active_frame<len(house.animation.frames)-1: house.animate()
+		
 		#sprite.y=300; sprite.x=400; health=100 # I am too awesome for this game
-		if(sprite.x+sprite.width>=window.width-50):
-			sprite.x=window.width-sprite.width-50
+		if(sprite.x+sprite.width>=window.width-100):
+			sprite.x=window.width-sprite.width-100
 		if(sprite.x<=-48) or (sprite.y<-48):
 			pyglet.clock.unschedule(update)
 			background_music.pause()
@@ -368,7 +406,9 @@ def update(dt):
 			return
 			
 def init(dt):
-	global bg, menu, pause_menu, gameover, over_menu, instructions, jump, djump, gameoversound, hitsound, background_music, barrel, medkit, tex_sand, backgrounds, scoretext, terrain, sprite, window, keys, splash_window, fps_display, wave
+	global bg, menu, pause_menu, gameover, over_menu, instructions, jump, djump, gameoversound, hitsound, \
+		background_music, house, barrel, medkit, tex_sand, backgrounds, scoretext, terrain, sprite, window, keys, \
+		splash_window, fps_display, wave
 	#menu
 	bg=pyglet.resource.image('menu.png')
 	menu=[pyglet.text.Label("Start game",x=128, y=350, font_name="Arial", font_size=64),
@@ -396,7 +436,9 @@ def init(dt):
 	background_music.volume=0.5
 	background_music.eos_action=pyglet.media.Player.EOS_LOOP
 	background_music.queue(pyglet.resource.media('music.ogg'))
-
+	
+	house=Sprite(img=pyglet.resource.image("house.png"), x=1000, y=0, width=460, height=400, hspeed=-4, anim_speed=0.1)
+	
 	barrel=pyglet.resource.image('barrel.png')
 	cache_image(barrel)
 	medkit=pyglet.resource.image('medkit.png')
@@ -474,9 +516,11 @@ instructions=None
 addobject=0
 objectlist=[]
 
-#medkitzz
+#powerupz
 addmedkit=0
 medkitlist=[]
+
+boost=0
 
 #sound effects
 jump=None
@@ -485,6 +529,7 @@ gameoversound=None
 hitsound=None
 background_music=None
 
+house=None
 barrel=None
 medkit=None
 
