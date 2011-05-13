@@ -9,6 +9,13 @@ import random
 import getpass
 import urllib
 
+class SplashScreen(pyglet.window.Window):
+	def on_close(self):
+		pass
+	
+	def on_draw(self):
+		splash_background.blit(0, 0)
+
 class Window(pyglet.window.Window):
 	def on_close(self):
 		global game_state
@@ -33,7 +40,7 @@ class Window(pyglet.window.Window):
 			over_menu[selection].color=(128, 0, 0, 255)
 		window.clear()
 		if game_state == States.RUN:
-			glClearColor(0, 128, 128, 255)
+			glClearColor(0, 0, 0, 255)
 			bw=0
 			for i in range(0,len(backgrounds)-1):
 				bw+=backgrounds[i].width
@@ -197,7 +204,7 @@ class Window(pyglet.window.Window):
 					except:
 						highscores=["Please check your internet connection "]
 				if selection == 3:
-					self.close()
+					pyglet.app.exit()
 			
 		if game_state == States.PAUSE:
 			if symbol == key.DOWN:
@@ -264,12 +271,13 @@ def update(dt):
 		addobject=random.randint(1,100)
 		
 		if addobject ==1 :
-			objectlist.append(Sprite(img=barrel, x=random.randint(300,1000), y=600, width=32, height=32, gravity=-0.2))
+			objectlist.append(Sprite(img=barrel, x=random.randint(300,1000), y=600, width=64, height=64, gravity=-0.2, anchor_x=32, anchor_y=32))
 		for k in objectlist:
 			k.hspeed=-random.randint(1,4)
 			k.vspeed+=k.gravity
 			k.y+=k.vspeed
 			k.x+=k.hspeed
+			k.rotation+=5.0
 			if sprite.collision_with(k):
 				hitsound.play()
 				health-=15
@@ -291,6 +299,7 @@ def update(dt):
 		#background.x+=background.hspeed
 		terrain.progress(4)
 		terrain_y=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))
+		wave.animate()
 		if sprite.y<=terrain_y:
 			sprite.vspeed=0
 			sprite.hspeed-=terrain.get_slope(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))*0.8
@@ -329,6 +338,74 @@ def update(dt):
 			game_state=States.GAMEOVER
 			selection=0
 			return
+			
+def init(dt):
+	global bg, menu, pause_menu, gameover, over_menu, instructions, jump, djump, gameoversound, hitsound, background_music, barrel, tex_sand, backgrounds, scoretext, terrain, sprite, window, keys, splash_window, fps_display, wave
+	#menu
+	bg=pyglet.resource.image('menu.png')
+	menu=[pyglet.text.Label("Start game",x=128, y=350, font_name="Arial", font_size=64),
+		pyglet.text.Label("Instructions",x=128, y=250, font_name="Arial", font_size=64),
+		pyglet.text.Label("Highscores",x=128, y=150, font_name="Arial", font_size=64),
+		pyglet.text.Label("Exit game",x=128, y=50, font_name="Arial", font_size=64)]
+	#pause menu
+	pause_menu=[
+		pyglet.text.Label("Resume game",x=128, y=300, font_name="Arial", font_size=64), 
+		pyglet.text.Label("Quit to menu",x=128, y=200, font_name="Arial", font_size=64)]
+	#gameover
+	gameover=pyglet.resource.image('gameover.png')
+	over_menu=[
+		pyglet.text.Label("Submit score",x=128, y=150, font_name="Arial", font_size=64), 
+		pyglet.text.Label("Quit to menu",x=128, y=50, font_name="Arial", font_size=64)]
+	#instructions
+	instructions=pyglet.resource.image('instructions.png')
+
+	#sound effects
+	jump=pyglet.resource.media('jump.ogg',streaming=False)
+	djump=pyglet.resource.media('djump.ogg',streaming=False)
+	gameoversound=pyglet.resource.media('gameover.ogg',streaming=False)
+	hitsound=pyglet.resource.media('hit.ogg', streaming=False)
+	background_music=pyglet.media.Player()
+	background_music.volume=0.5
+	background_music.eos_action=pyglet.media.Player.EOS_LOOP
+	background_music.queue(pyglet.resource.media('music.ogg'))
+
+	barrel=pyglet.resource.image('barrel.png')
+	cache_image(barrel)
+
+	tex_sand=pyglet.resource.texture('sand.png')
+
+	backgrounds=(
+		pyglet.resource.image("beach1.png"),
+		pyglet.resource.image("beach2.png"),
+		pyglet.resource.image("forrest1.png"),
+		pyglet.resource.image("forrest2.png"),
+		pyglet.resource.image("pplant1.png"),
+		pyglet.resource.image("village1.png"),
+		pyglet.resource.image("village2.png"),
+		pyglet.resource.image("pplant2.png"),
+		pyglet.resource.image("city1.png"),
+		pyglet.resource.image("city2.png"),
+		pyglet.resource.image("city1.png")
+	)
+
+	scoretext=pyglet.text.Label("Score: ", font_name="Arial", font_size=16, x=128, y=600-32, color=(0,0,0,255))
+	terrain=Terrain()
+	sprite=Sprite(img=pyglet.resource.image("canman.png"), x=256, y=150, width=150, height=188, gravity=-0.2)
+	for i in sprite.animation.frames:
+		cache_image(i[0])
+
+	wave=Sprite(img=pyglet.resource.image("wave.png"), x=-200, y=0, width=600, height=600, anim_speed=0.1)
+	#background=Sprite(img=pyglet.resource.image("city1.png"), x=0, y=0, width=1077, height=600, hspeed=-0.5)
+	window=Window(width=800, height=600, caption="The Wave", vsync=False, visible=False)
+	window.push_handlers(keys)
+	window.set_icon(
+		pyglet.resource.image("icon16.png"),
+		pyglet.resource.image("icon32.png"),
+		pyglet.resource.image("icon48.png")
+	)
+	splash_window.set_visible(False)
+	window.set_visible(True) #make sure the window gets its icon
+	fps_display = pyglet.clock.ClockDisplay()
 
 #~ glTexImage2D (tex_sand.target, 0, GL_RGB, block.width, block.height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_sand);
 class States():
@@ -343,81 +420,59 @@ class States():
 pyglet.resource.path = ['res', 'res/backgrounds']
 pyglet.resource.reindex()
 
+splash_background=pyglet.resource.image("splash.png")
+screen = pyglet.window.get_platform().get_default_display().get_default_screen()
+splash_window=SplashScreen(width=640, height=480, caption="The Wave", style=pyglet.window.Window.WINDOW_STYLE_BORDERLESS)
+splash_window.set_location(x=screen.width/2-640/2, y=screen.height/2-480/2)
+splash_window.set_visible(True)
+
 game_state=States.MENU
 selection=0
+
 #menu
-bg=pyglet.resource.image('menu.png')
-menu=[pyglet.text.Label("Start game",x=128, y=350, font_name="Arial", font_size=64),
-	pyglet.text.Label("Instructions",x=128, y=250, font_name="Arial", font_size=64),
-	pyglet.text.Label("Highscores",x=128, y=150, font_name="Arial", font_size=64),
-	pyglet.text.Label("Exit game",x=128, y=50, font_name="Arial", font_size=64)]
+bg=None
+menu=[]
 #pause menu
-pause_menu=[
-	pyglet.text.Label("Resume game",x=128, y=300, font_name="Arial", font_size=64), 
-	pyglet.text.Label("Quit to menu",x=128, y=200, font_name="Arial", font_size=64)]
+pause_menu=[]
 #gameover
-gameover=pyglet.resource.image('gameover.png')
-over_menu=[
-	pyglet.text.Label("Submit score",x=128, y=150, font_name="Arial", font_size=64), 
-	pyglet.text.Label("Quit to menu",x=128, y=50, font_name="Arial", font_size=64)]
+gameover=None
+over_menu=[]
 #instructions
-instructions=pyglet.resource.image('instructions.png')
+instructions=None
 
 #akta diggggg
 addobject=0
 objectlist=[]
 
 #sound effects
-jump=pyglet.resource.media('jump.ogg',streaming=False)
-djump=pyglet.resource.media('djump.ogg',streaming=False)
-gameoversound=pyglet.resource.media('gameover.ogg',streaming=False)
-hitsound=pyglet.resource.media('hit.ogg', streaming=False)
-background_music=pyglet.media.Player()
-background_music.volume=0.5
-background_music.eos_action=pyglet.media.Player.EOS_LOOP
-background_music.queue(pyglet.resource.media('music.ogg'))
+jump=None
+djump=None
+gameoversound=None
+hitsound=None
+background_music=None
 
-barrel=pyglet.resource.image('barrel.png')
-cache_image(barrel)
+barrel=None
 
-tex_sand=pyglet.resource.texture('sand.png')
+tex_sand=None
 
-backgrounds=(
-	pyglet.resource.image("beach1.png"),
-	pyglet.resource.image("beach2.png"),
-	pyglet.resource.image("forrest1.png"),
-	pyglet.resource.image("forrest2.png"),
-	pyglet.resource.image("pplant1.png"),
-	pyglet.resource.image("pplant2.png"),
-	pyglet.resource.image("city1.png"),
-	pyglet.resource.image("city2.png"),
-	pyglet.resource.image("city1.png")
-)
+backgrounds=None
 background_progress=0.0
 
 score=0.0
 health=100
 double_jump=False
-scoretext=pyglet.text.Label("Score: ", font_name="Arial", font_size=16, x=128, y=600-32, color=(0,0,0,255))
-terrain=Terrain()
-sprite=Sprite(img=pyglet.resource.image("canman.png"), x=256, y=150, width=150, height=188, gravity=-0.2)
-for i in sprite.animation.frames:
-	cache_image(i[0])
+scoretext=None
+terrain=None
+sprite=None
 
-wave=Sprite(img=pyglet.resource.image("wave.png"), x=0, y=0, width=128, height=512)
-#background=Sprite(img=pyglet.resource.image("city1.png"), x=0, y=0, width=1077, height=600, hspeed=-0.5)
+wave=None
 keys=key.KeyStateHandler()
-window=Window(width=800, height=600, caption="The Wave", vsync=False, visible=False)
-window.push_handlers(keys)
-window.set_icon(
-	pyglet.resource.image("icon16.png"),
-	pyglet.resource.image("icon32.png"),
-	pyglet.resource.image("icon48.png")
-)
-window.set_visible(True) #make sure the window gets its icon
-fps_display = pyglet.clock.ClockDisplay()
+window=None
+fps_display=None
 
 username=getpass.getuser()
 highscores=[]
+
+pyglet.clock.schedule_once(init, 1) #schedule the init function to do the real loading.. we want the splash as soon as possible
 
 pyglet.app.run()
