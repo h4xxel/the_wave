@@ -502,9 +502,14 @@ pyglet.resource.reindex()
 
 splash_background=pyglet.resource.image("splash.png")
 screen = pyglet.window.get_platform().get_default_display().get_default_screen()
-splash_window=SplashScreen(width=640, height=480, caption="The Wave", style=pyglet.window.Window.WINDOW_STYLE_BORDERLESS)
-splash_window.set_location(x=screen.width/2-640/2, y=screen.height/2-480/2)
+splash_window=SplashScreen(width=640, height=480, caption="The Wave", style=pyglet.window.Window.WINDOW_STYLE_BORDERLESS, visible=False)
+splash_window.set_icon(
+	pyglet.resource.image("icon16.png"),
+	pyglet.resource.image("icon32.png"),
+	pyglet.resource.image("icon48.png")
+)
 splash_window.set_visible(True)
+splash_window.set_location(x=screen.width/2-640/2, y=screen.height/2-480/2)
 
 game_state=States.MENU
 selection=0
