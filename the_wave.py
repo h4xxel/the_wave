@@ -9,6 +9,10 @@ import random
 import getpass
 import urllib
 
+def reset_boost(dt):
+	global boost
+	boost=0
+
 class SplashScreen(pyglet.window.Window):
 	def on_close(self):
 		pass
@@ -62,6 +66,8 @@ class Window(pyglet.window.Window):
 				k.draw()
 			for m in medkitlist:
 				m.draw()
+			for s in speedkitlist:
+				s.draw()
 			sprite.draw()
 			scoretext.draw()
 			house.draw()
@@ -138,7 +144,7 @@ class Window(pyglet.window.Window):
 			username=username[0:-1]
 
 	def on_key_press(self, symbol, modifiers):
-		global double_jump, selection, game_state, score, objectlist, health, highscores, username, background_progress
+		global double_jump, selection, game_state, score, objectlist, health, highscores, username, background_progress, addobject
 		if(game_state==States.RUN):
 			terrain_y=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))
 			if(sprite.x>house.x and sprite.x<house.x+house.width):
@@ -195,6 +201,8 @@ class Window(pyglet.window.Window):
 					health=100
 					background_progress=0.0
 					background_music.play()
+					addobject=0
+					pyglet.clock.unschedule(reset_boost)
 					pyglet.clock.schedule_interval(update, 1.0/60.0)
 					pyglet.clock.schedule_interval(update, 1.0/60.0) #somehow this works and one schedule on 1/120 does not.. whatever
 					#pyglet.clock.schedule(update)
@@ -261,26 +269,17 @@ class Window(pyglet.window.Window):
 				selection=0
 				game_state = States.PAUSE
 				background_music.pause()
-				
-		#~ if game_state == States.GAMEOVER:
-			#~ if symbol == key.ENTER:
-				#~ game_state=States.SUBMITSCORE
-				#~ symbol=None
-			#~ if symbol == key.ESCAPE:
-				#~ game_state=States.MENU
-				#~ symbol=None
-				#~ selection=0
-				#game_state = States.MENU
+
 
 def update(dt):
-	global score, double_jump, game_state, health, background_progress, boost, addobject
+	global score, double_jump, game_state, health, background_progress, boost, addobject, medkitlist, speedkitlist, objectlist, speedkit
 	if game_state == States.RUN: #just some extra redundancy.. we do not want to have a crash
 		#start dropping barrels when approaching the power plant
 		if score>700:
 			if addobject==0:
 				alertsound.play()
-			addobject=random.randint(1,100)
-			if addobject ==1:
+			addobject=random.randint(1,(80 if score>2000 else 130))
+			if addobject ==1 and len(objectlist)<3:
 				objectlist.append(Sprite(img=barrel, x=random.randint(300,1000), y=600, width=64, height=64, gravity=-0.2, anchor_x=32, anchor_y=32))
 		for k in objectlist:
 			k.hspeed=-random.randint(1,4)
@@ -296,9 +295,35 @@ def update(dt):
 				objectlist.remove(k)
 				
 		terrain.progress(4)
-		addmedkit=random.randint(1,500)
+		#speedkits
+		if random.randint(1,650)==1 and score>200:
+			speedkitlist.append(Sprite(img=speedkit,x=random.randint(500,1000), y=600, width=32, height=32, gravity=-0.2))
+		for s in speedkitlist:
+			if s.x<800:
+				terrain_s=terrain.get_y(int(s.x+(s.width/2)+terrain.terrain_progress))
+				if s.y<=terrain_s:
+					s.y=terrain_s 
+					s.hspeed=-4
+					s.x+=s.hspeed
+				else:
+					s.hspeed=-random.randint(1,4)
+					s.x+=s.hspeed
+					s.vspeed+=s.gravity
+					s.y+=s.vspeed
+			elif s.y<0 or s.x>800:
+				s.y=150
+			if sprite.collision_with(s):
+				#hitsound.play()
+				boost=2
+				pyglet.clock.unschedule(reset_boost)
+				pyglet.clock.schedule_once(reset_boost, 10)
+				speedkitlist.remove(s)
+			if s.y<0:
+				speedkitlist.remove(s)
+		
+		
 		#and we don't need medkits until we have barrels
-		if addmedkit==1 and score>800:
+		if random.randint(1,500)==1 and score>800:
 			medkitlist.append(Sprite(img=medkit,x=random.randint(500,1000), y=600, width=32, height=32, gravity=-0.2))
 		for m in medkitlist:
 			if m.x<800:
@@ -390,6 +415,11 @@ def update(dt):
 		
 		wave.animate()
 		#when we reach the city we create foreground houses as well
+		if(boost>0):
+			sprite.animate()
+			sprite.tint=(0,255,0)
+		else:
+			sprite.tint=(255,255,255)
 		if score>1400: house.x+=house.hspeed
 		if house.x<-500:
 			house.x=800+random.randint(200, 600)
@@ -414,7 +444,7 @@ def update(dt):
 def init(dt):
 	global bg, menu, pause_menu, gameover, over_menu, instructions, jump, djump, gameoversound, hitsound, \
 		background_music, house, barrel, medkit, tex_sand, backgrounds, scoretext, terrain, sprite, window, keys, \
-		splash_window, fps_display, wave, collapse, alertsound
+		splash_window, fps_display, wave, collapse, alertsound, speedkit
 	#menu
 	bg=pyglet.resource.image('menu.png')
 	menu=[pyglet.text.Label("Start game",x=128, y=350, font_name="Arial", font_size=64),
@@ -451,6 +481,8 @@ def init(dt):
 	cache_image(barrel)
 	medkit=pyglet.resource.image('medkit.png')
 	cache_image(medkit)
+	speedkit=pyglet.resource.image('speedkit.png')
+	cache_image(speedkit)
 
 	tex_sand=pyglet.resource.texture('sand.png')
 
@@ -532,6 +564,8 @@ objectlist=[]
 #powerupz
 addmedkit=0
 medkitlist=[]
+addspeedkit=0
+speedkitlist=[]
 
 boost=0
 
@@ -547,6 +581,7 @@ background_music=None
 house=None
 barrel=None
 medkit=None
+speedkit=None
 
 tex_sand=None
 

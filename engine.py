@@ -17,6 +17,7 @@ class Sprite(pyglet.sprite.Sprite):
 	gravity=0
 	rotation=0
 	anchor_x=0; anchor_y=0
+	tint=(255,255,255)
 	def __init__(self, img, x, y, width, height, hspeed=0, vspeed=0, gravity=0, anim_speed=0.15, anchor_x=0, anchor_y=0):
 		frames=[]
 		#image=pyglet.resource.image(img)
@@ -29,7 +30,7 @@ class Sprite(pyglet.sprite.Sprite):
 		self.anchor_x=anchor_x; self.anchor_y=anchor_y
 
 	def draw(self):
-		self.animation.blit(self.x, self.y, self.color, self.rotation, self.anchor_x, self.anchor_y)
+		self.animation.blit(self.x, self.y, self.tint, self.rotation, self.anchor_x, self.anchor_y)
 
 	def animate(self):
 		self.animation.progress()
