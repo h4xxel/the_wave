@@ -144,7 +144,8 @@ class Window(pyglet.window.Window):
 			username=username[0:-1]
 
 	def on_key_press(self, symbol, modifiers):
-		global double_jump, selection, game_state, score, objectlist, health, highscores, username, background_progress, addobject
+		global double_jump, selection, game_state, score, objectlist, health, highscores, username, background_progress, addobject, \
+		medkitlist, speedkitlist, boost
 		if(game_state==States.RUN):
 			terrain_y=terrain.get_y(int(sprite.x+(sprite.width/2)+terrain.terrain_progress))
 			if(sprite.x>house.x and sprite.x<house.x+house.width):
@@ -202,6 +203,8 @@ class Window(pyglet.window.Window):
 					background_progress=0.0
 					background_music.play()
 					addobject=0
+					boost=0
+					objectlist=[]; medkitlist=[]; speedkitlist=[]
 					pyglet.clock.unschedule(reset_boost)
 					pyglet.clock.schedule_interval(update, 1.0/60.0)
 					pyglet.clock.schedule_interval(update, 1.0/60.0) #somehow this works and one schedule on 1/120 does not.. whatever
